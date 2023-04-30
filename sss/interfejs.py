@@ -63,6 +63,12 @@ def klikniecie(ekran, x, y):
         print(x, y)
         return pole_x, pole_y
 
+def podswietl_pole(pola_do_podswietlenia, ekran):
+    for pole in pola_do_podswietlenia:
+        p.draw.rect(ekran, "coral3", p.Rect(pole[0]*80+30, pole[1]*80+60, 80, 80))
+
+
+
 def graj(root):
     root.destroy()
     ekran = p.display.set_mode((1024,768))
@@ -75,9 +81,10 @@ def graj(root):
     wybrane_pole = ()
     klikniecia_gracza = []
 
-
     while(running):
         plansza.wyswietl_plansze(ekran)
+        if len(klikniecia_gracza) > 0:
+            podswietl_pole(klikniecia_gracza, ekran)
         plansza.wyswietl_figury(ekran)
         for event in p.event.get():
 
@@ -86,8 +93,7 @@ def graj(root):
             if event.type == p.MOUSEBUTTONDOWN:
                 pos = p.mouse.get_pos()
                 pole_x, pole_y = klikniecie(ekran, pos[0], pos[1])
-                for i in range(4):
-                    p.draw.rect(ekran, (255,0,0), (35+pole_x*80, 65+pole_y*80, 70, 70), 2)
+
                 if wybrane_pole == (pole_x, pole_y):
                     wybrane_pole = ()
                     klikniecia_gracza = []
