@@ -59,6 +59,9 @@ class Plansza:
     def wykonaj_ruch(self, ruch):
         if self.board[ruch.start_x][ruch.start_y] is None:
             return
+        if self.board[ruch.cel_x][ruch.cel_y] is not None:
+            if self.board[ruch.start_x][ruch.start_y].kolor == self.board[ruch.cel_x][ruch.cel_y].kolor:
+                return
         self.board[ruch.start_x][ruch.start_y].rzad = ruch.cel_x
         self.board[ruch.start_x][ruch.start_y].kolumna = ruch.cel_y
         self.board[ruch.start_x][ruch.start_y] = None

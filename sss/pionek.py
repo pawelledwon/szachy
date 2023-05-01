@@ -2,6 +2,7 @@ from figura import *
 
 class Pionek(Figura):
     nr_zdjecia = 5
+    nazwa = 'Pionek'
     def print(self):
         print(self.nazwa)
 

@@ -1,7 +1,7 @@
 from figura import *
 class Hetman(Figura):
     nr_zdjecia = 3
-
+    nazwa = 'Hetman'
     def print(self):
         print(self.nazwa)
 

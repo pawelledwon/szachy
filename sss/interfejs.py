@@ -80,6 +80,7 @@ def graj(root):
     plansza = Plansza(Zdjecia)
     wybrane_pole = ()
     klikniecia_gracza = []
+    poprawne_ruchy = []
 
     while(running):
         plansza.wyswietl_plansze(ekran)
@@ -100,13 +101,15 @@ def graj(root):
                 else:
                     wybrane_pole = (pole_x, pole_y)
                     klikniecia_gracza.append(wybrane_pole)
-                print(plansza.board)
+                #print(plansza.board)
                 if len(klikniecia_gracza) == 2:
                     ruch = Ruch(klikniecia_gracza[0], klikniecia_gracza[1], plansza.board)
+
                     plansza.wykonaj_ruch(ruch)
                     wybrane_pole = ()
                     klikniecia_gracza = []
                 #print(plansza.board)
+        #if len(klikniecia_gracza) ==2:
 
         zegar.tick(15)
         p.display.flip()

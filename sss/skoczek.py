@@ -1,6 +1,7 @@
 from figura import *
 class Skoczek(Figura):
     nr_zdjecia = 1
+    nazwa = 'Skoczek'
 
     def print(self):
         print(self.nazwa)
