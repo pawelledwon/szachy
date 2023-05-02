@@ -11,3 +11,6 @@ class Skoczek(Figura):
             ekran.blit(self.zdjecie, (37+self.kolumna*80, 625 - ((7 - self.rzad)*80)))
         elif self.kolor == "Czarny":
             ekran.blit(self.zdjecie, (37+self.kolumna*80, 65+self.rzad*80))
+
+    def generuj_poprawne_ruchy(self, board):
+        pass

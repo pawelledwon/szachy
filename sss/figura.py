@@ -12,6 +12,8 @@ class Figura:
     def ruch(self):
          raise Exception("Niemozliwy ruch do wykonania")
 
+    def generuj_poprawne_ruchy(self, board):
+        pass
     def wyswietl(self, ekran):
         pass
 

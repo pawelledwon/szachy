@@ -1,5 +1,4 @@
 import tkinter
-from przycisk import *
 from silnik import *
 import pygame as p
 
@@ -54,14 +53,13 @@ def zaladuj_zdjecia():
 
 
 def klikniecie(ekran, x, y):
-
-    if x<=670 and x>=30 and y<=700 and y>=60:
-        divX = x - 30
-        divY = y - 60
-        pole_x = int(divX / (640/8))
-        pole_y = int(divY / (640/8))
-        print(x, y)
-        return pole_x, pole_y
+    #if x<=670 and x>=30 and y<=700 and y>=60:
+    divX = x - 30
+    divY = y - 60
+    pole_x = int(divX / (640/8))
+    pole_y = int(divY / (640/8))
+    #print(x, y)
+    return pole_x, pole_y
 
 def podswietl_pole(pola_do_podswietlenia, ekran):
     for pole in pola_do_podswietlenia:
@@ -80,7 +78,9 @@ def graj(root):
     plansza = Plansza(Zdjecia)
     wybrane_pole = ()
     klikniecia_gracza = []
-    poprawne_ruchy = []
+    poprawne_ruchy = plansza.aktualizuj_ruchy()
+    czy_wykonano_ruch = False
+
 
     while(running):
         plansza.wyswietl_plansze(ekran)
@@ -93,23 +93,31 @@ def graj(root):
                 running = False
             if event.type == p.MOUSEBUTTONDOWN:
                 pos = p.mouse.get_pos()
-                pole_x, pole_y = klikniecie(ekran, pos[0], pos[1])
+                if pos[0]<=670 and pos[0]>=30 and pos[1]<=700 and pos[1]>=60:
+                    pole_x, pole_y = klikniecie(ekran, pos[0], pos[1])
 
-                if wybrane_pole == (pole_x, pole_y):
-                    wybrane_pole = ()
-                    klikniecia_gracza = []
-                else:
-                    wybrane_pole = (pole_x, pole_y)
-                    klikniecia_gracza.append(wybrane_pole)
-                #print(plansza.board)
-                if len(klikniecia_gracza) == 2:
-                    ruch = Ruch(klikniecia_gracza[0], klikniecia_gracza[1], plansza.board)
-
-                    plansza.wykonaj_ruch(ruch)
-                    wybrane_pole = ()
-                    klikniecia_gracza = []
-                #print(plansza.board)
-        #if len(klikniecia_gracza) ==2:
+                    if wybrane_pole == (pole_x, pole_y):
+                        wybrane_pole = ()
+                        klikniecia_gracza = []
+                    else:
+                        wybrane_pole = (pole_x, pole_y)
+                        klikniecia_gracza.append(wybrane_pole)
+                    #print(plansza.board)
+                    if len(klikniecia_gracza) == 2:
+                        ruch = Ruch(klikniecia_gracza[0], klikniecia_gracza[1], plansza.board)
+                        print(ruch.notacja)
+                        if ruch in poprawne_ruchy:
+                            plansza.wykonaj_ruch(ruch)
+                            czy_wykonano_ruch = True
+                        wybrane_pole = ()
+                        klikniecia_gracza = []
+                    #print(plansza.board)
+        if czy_wykonano_ruch:
+            print("essa")
+            poprawne_ruchy = plansza.aktualizuj_ruchy()
+            for ruch in poprawne_ruchy:
+                print(ruch.notacja)
+            czy_wykonano_ruch = False
 
         zegar.tick(15)
         p.display.flip()

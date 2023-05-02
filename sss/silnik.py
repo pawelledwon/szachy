@@ -4,18 +4,8 @@ from skoczek import *
 from goniec import *
 from krol import *
 from hetman import *
+from ruch import *
 import pygame as p
-
-
-class Ruch:
-    def __init__(self, start, cel, board):
-        self.start_x = start[1]
-        self.start_y = start[0]
-        self.cel_x = cel[1]
-        self.cel_y = cel[0]
-        self.przesuwana_figura = board[self.start_x][self.start_y]
-        self.przechwytywana_figura = board[self.cel_x][self.cel_y]
-
 
 
 class Plansza:
@@ -31,6 +21,7 @@ class Plansza:
             [Wieza("Bialy", 7, 0, Zdjecia["bWieza"]), Skoczek("Bialy", 7, 1, Zdjecia["bSkoczek"]), Goniec("Bialy", 7, 2, Zdjecia["bGoniec"]), Hetman("Bialy", 7, 3, Zdjecia["bHetman"]), Krol("Bialy", 7, 4, Zdjecia["bKrol"]), Goniec("Bialy", 7, 5, Zdjecia["bGoniec"]), Skoczek("Bialy", 7, 6, Zdjecia["bSkoczek"]), Wieza("Bialy", 7, 7, Zdjecia["bWieza"])]
         ]
         self.historia_ruchow = []
+        self.ruch_bialych = True
 
 
     def wyswietl_plansze(self, ekran):
@@ -56,17 +47,37 @@ class Plansza:
         #         for i in range(4):
         #             p.draw.rect(ekran, (255,0,0), (35+pole_x*80, 65+pole_y*80, 70, 70), 2)
 
+    def aktualizuj_ruchy(self):
+        poprawne_ruchy = []
+        for r in range(len(self.board)):
+            for c in range(len(self.board[r])):
+                if self.board[r][c] is not None:
+                    if (self.board[r][c].kolor == 'Bialy' and self.ruch_bialych) or (self.board[r][c].kolor == 'Czarny' and not self.ruch_bialych):
+                        #print(self.board[r][c].nazwa + ' ' + self.board[r][c].kolor)
+                        if self.board[r][c].nazwa == 'Pionek':
+                            poprawne_ruchy += self.board[r][c].generuj_poprawne_ruchy(self.board)
+
+        for r in poprawne_ruchy:
+            print(r.notacja)
+        return poprawne_ruchy
+
     def wykonaj_ruch(self, ruch):
         if self.board[ruch.start_x][ruch.start_y] is None:
             return
         if self.board[ruch.cel_x][ruch.cel_y] is not None:
             if self.board[ruch.start_x][ruch.start_y].kolor == self.board[ruch.cel_x][ruch.cel_y].kolor:
                 return
+        if (self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Czarny') or (not self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Bialy'):
+            return
         self.board[ruch.start_x][ruch.start_y].rzad = ruch.cel_x
         self.board[ruch.start_x][ruch.start_y].kolumna = ruch.cel_y
         self.board[ruch.start_x][ruch.start_y] = None
         self.board[ruch.cel_x][ruch.cel_y] = ruch.przesuwana_figura
         self.historia_ruchow.append(ruch)
+        if self.ruch_bialych:
+            self.ruch_bialych = False
+        else:
+            self.ruch_bialych = True
 
 
 
