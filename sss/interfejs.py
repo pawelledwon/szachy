@@ -3,7 +3,7 @@ from silnik import *
 import pygame as p
 
 
-def glowne_menu():
+def main():
     root = tkinter.Tk()         #tworzy okienko
     root.geometry('480x480')  #ustawia rozmiar
     root.resizable(width=False, height=False)
@@ -65,6 +65,18 @@ def podswietl_pole(pola_do_podswietlenia, ekran):
     for pole in pola_do_podswietlenia:
         p.draw.rect(ekran, "coral3", p.Rect(pole[0]*80+30, pole[1]*80+60, 80, 80))
 
+def podswietl_ruchy(klikniecia_gracza, ekran, poprawne_ruchy):
+    startx = klikniecia_gracza[0][0]
+    starty = klikniecia_gracza[0][1]
+    notacja_klikniecia = str(starty)+str(startx)
+
+    #print("essa" + notacja_klikniecia)
+    #print(x, y)
+    for ruch in poprawne_ruchy:
+        #print(ruch.notacja)
+        notacja_mozliwego_ruchu = ruch.notacja[0]+ruch.notacja[1]
+        if notacja_mozliwego_ruchu == notacja_klikniecia:
+            p.draw.rect(ekran, "coral3", p.Rect(ruch.cel_y*80+30, ruch.cel_x*80+60, 80, 80))
 
 
 def graj(root):
@@ -84,8 +96,11 @@ def graj(root):
 
     while(running):
         plansza.wyswietl_plansze(ekran)
-        if len(klikniecia_gracza) > 0:
+        if len(klikniecia_gracza) == 1:
             podswietl_pole(klikniecia_gracza, ekran)
+            for ruch in poprawne_ruchy:
+                print(ruch.notacja)
+            podswietl_ruchy(klikniecia_gracza, ekran, poprawne_ruchy)
         plansza.wyswietl_figury(ekran)
         for event in p.event.get():
 
@@ -115,8 +130,8 @@ def graj(root):
         if czy_wykonano_ruch:
             print("essa")
             poprawne_ruchy = plansza.aktualizuj_ruchy()
-            for ruch in poprawne_ruchy:
-                print(ruch.notacja)
+            # for ruch in poprawne_ruchy:
+            #     print(ruch.notacja)
             czy_wykonano_ruch = False
 
         zegar.tick(15)

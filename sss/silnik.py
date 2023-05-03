@@ -54,19 +54,19 @@ class Plansza:
                 if self.board[r][c] is not None:
                     if (self.board[r][c].kolor == 'Bialy' and self.ruch_bialych) or (self.board[r][c].kolor == 'Czarny' and not self.ruch_bialych):
                         #print(self.board[r][c].nazwa + ' ' + self.board[r][c].kolor)
-                        if self.board[r][c].nazwa == 'Pionek':
-                            poprawne_ruchy += self.board[r][c].generuj_poprawne_ruchy(self.board)
+                        poprawne_ruchy += self.board[r][c].generuj_poprawne_ruchy(self.board)
+                    self.board[r][c].lista_ruchow = []
 
-        for r in poprawne_ruchy:
-            print(r.notacja)
+        # for r in poprawne_ruchy:
+        #     print(r.notacja)
         return poprawne_ruchy
 
     def wykonaj_ruch(self, ruch):
-        if self.board[ruch.start_x][ruch.start_y] is None:
-            return
-        if self.board[ruch.cel_x][ruch.cel_y] is not None:
-            if self.board[ruch.start_x][ruch.start_y].kolor == self.board[ruch.cel_x][ruch.cel_y].kolor:
-                return
+        #if self.board[ruch.start_x][ruch.start_y] is None:
+            #return
+        # if self.board[ruch.cel_x][ruch.cel_y] is not None:
+        #     if self.board[ruch.start_x][ruch.start_y].kolor == self.board[ruch.cel_x][ruch.cel_y].kolor:
+        #         return
         if (self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Czarny') or (not self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Bialy'):
             return
         self.board[ruch.start_x][ruch.start_y].rzad = ruch.cel_x
