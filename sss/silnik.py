@@ -50,44 +50,80 @@ class Plansza:
 
     def aktualizuj_ruchy(self):
         ruchy = self.generuj_ruchy()
-
-        for ruch in range(len(ruchy)):
-
-            self.wykonaj_ruch(ruchy[ruch])
-
-            ruchy_przeciwnika = self.generuj_ruchy()
-
-            if not self.ruch_bialych:
-                for ruch_p in ruchy_przeciwnika:
-                    if ruch_p.cel_x == self.pozycja_krolaB[1] and ruch_p.cel_y == self.pozycja_krolaB[0]:
-                        ruchy = self.board[self.pozycja_krolaB[1]][self.pozycja_krolB[0]].generuj_poprawne_ruchy(self.board)
-
-            self.cofnij_ruch(ruchy[ruch])
-
-
-        if self.ruch_bialych:
-            self.ruch_bialych = False
-        else:
-            self.ruch_bialych = True
+        # if self.ruch_bialych:
+        #     kolor = 'Bialy'
+        # else:
+        #     kolor = 'Czarny'
+        #
+        # for ruch in range(len(ruchy)):
+        #
+        #
+        #     self.wykonaj_ruch(ruchy[ruch])
+        #     print(ruchy[ruch].notacja)
+        #     if self.ruch_bialych:
+        #         self.ruch_bialych = False
+        #     else:
+        #         self.ruch_bialych = True
+        #
+        #     if self.czy_szach(self.pozycja_krolaB, self.pozycja_krolaC, kolor):
+        #         ruchy.remove(ruchy[ruch])
+        #
+        #     if self.ruch_bialych:
+        #         self.ruch_bialych = False
+        #     else:
+        #         self.ruch_bialych = True
+        #
+        #     self.cofnij_ruch()
 
 
         return ruchy
 
-    #def czy_szach(self):
-
-    def cofnij_ruch(self, ruch):
-        if self.board[ruch.start_x][ruch.start_y] is None:
-            return
-        self.board[ruch.start_x][ruch.start_y].rzad = ruch.start_x
-        self.board[ruch.start_x][ruch.start_y].kolumna = ruch.start_x
-        self.board[ruch.cel_x][ruch.cel_y] = None
-        self.board[ruch.start_x][ruch.start_y] = ruch.przesuwana_figura
-
-        self.historia_ruchow.remove(ruch)
+    def czy_szach(self, pozycja_krolaB, pozycja_krolaC, kolor):
         if self.ruch_bialych:
             self.ruch_bialych = False
         else:
             self.ruch_bialych = True
+
+        ruchy_przeciwnika = self.generuj_ruchy()
+
+        if self.ruch_bialych:
+            self.ruch_bialych = False
+        else:
+            self.ruch_bialych = True
+
+        for ruch in ruchy_przeciwnika:
+            if kolor == 'Bialy' and ruch.cel_x == pozycja_krolaB[0] and ruch.cel_y == pozycja_krolaB[1]:
+                return True
+            if kolor == 'Czarny' and ruch.cel_x == pozycja_krolaC[0] and ruch.cel_y == pozycja_krolaC[1]:
+                return True
+        return False
+
+    def cofnij_ruch(self):
+        # if self.board[ruch.start_x][ruch.start_y] is None:
+        #     return
+        if len(self.historia_ruchow) != 0:
+            ruch = self.historia_ruchow.pop()
+            #print(ruch.cel_x, ruch.cel_y)
+            self.board[ruch.start_x][ruch.start_y] = ruch.przesuwana_figura
+            self.board[ruch.cel_x][ruch.cel_y] = ruch.przechwytywana_figura
+            self.board[ruch.start_x][ruch.start_y].rzad = ruch.start_x
+            self.board[ruch.start_x][ruch.start_y].kolumna = ruch.start_y
+
+            #print(self.board)
+            if self.ruch_bialych:
+                self.ruch_bialych = False
+            else:
+                self.ruch_bialych = True
+            if ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Bialy':
+                self.pozycja_krolaB = (ruch.start_x, ruch.start_y)
+            elif ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Czarny':
+                self.pozycja_krolaC = (ruch.start_x, ruch.start_y)
+
+
+        # if self.ruch_bialych:
+        #     self.ruch_bialych = False
+        # else:
+        #     self.ruch_bialych = True
 
     def generuj_ruchy(self):
         poprawne_ruchy = []
@@ -109,8 +145,8 @@ class Plansza:
         # if self.board[ruch.cel_x][ruch.cel_y] is not None:
         #     if self.board[ruch.start_x][ruch.start_y].kolor == self.board[ruch.cel_x][ruch.cel_y].kolor:
         #         return
-        # if (self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Czarny') or (not self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Bialy'):
-        #     return
+        if (self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Czarny') or (not self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Bialy'):
+            return
 
         self.board[ruch.start_x][ruch.start_y].rzad = ruch.cel_x
         self.board[ruch.start_x][ruch.start_y].kolumna = ruch.cel_y

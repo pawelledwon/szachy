@@ -1,4 +1,6 @@
 import tkinter
+from tkinter import font
+
 from silnik import *
 import pygame as p
 
@@ -9,11 +11,11 @@ def main():
     root.resizable(width=False, height=False)
     root.title('Szachy')
     nazwa = tkinter.PhotoImage(file = "text.gif")
-    nazwaa = tkinter.Label(root,i=nazwa)
+    nazwaa = tkinter.Label(root, i=nazwa)
     nazwaa.pack(side='top')
 
     backgroundimage = tkinter.PhotoImage(file = "szachy.png")
-    background = tkinter.Label(root,i=backgroundimage)
+    background = tkinter.Label(root, i=backgroundimage)
     background.pack()
 
 
@@ -61,6 +63,20 @@ def klikniecie(ekran, x, y):
     #print(x, y)
     return pole_x, pole_y
 
+def draw_button(surface, rect, color, text):
+    font = p.font.SysFont(p.font.get_default_font(), 24)
+    p.draw.rect(surface, color, rect, border_radius=5)
+    p.draw.rect(surface, (0, 0, 0), rect, 2, border_radius=5)
+    text_surf = font.render(text, True, (0, 0, 0))
+    text_rect = text_surf.get_rect(center=rect.center)
+    surface.blit(text_surf, text_rect)
+
+    # Create a separate text surface for the "<-----" text
+    arrow_surf = font.render("<-----", True, (0, 0, 0))
+    arrow_rect = arrow_surf.get_rect(center=rect.center)
+    arrow_rect.center = (arrow_rect.centerx, rect.centery + text_rect.height/2 + 5)
+    surface.blit(arrow_surf, arrow_rect)
+
 def podswietl_pole(pola_do_podswietlenia, ekran):
     for pole in pola_do_podswietlenia:
         p.draw.rect(ekran, "coral3", p.Rect(pole[0]*80+30, pole[1]*80+60, 80, 80))
@@ -81,7 +97,7 @@ def podswietl_ruchy(klikniecia_gracza, ekran, poprawne_ruchy):
 
 def graj(root):
     root.destroy()
-    ekran = p.display.set_mode((1024,768))
+    ekran = p.display.set_mode((1200,768))
     p.display.set_caption('Szachy')
     zegar = p.time.Clock()
     ekran.fill(p.Color("lightblue"))
@@ -96,10 +112,12 @@ def graj(root):
 
     while(running):
         plansza.wyswietl_plansze(ekran)
+        draw_button(ekran, p.Rect(700, 675, 200, 70), 'aliceblue', "Cofnij ruch")
+
         if len(klikniecia_gracza) == 1:
             podswietl_pole(klikniecia_gracza, ekran)
-            for ruch in poprawne_ruchy:
-                print(ruch.notacja)
+            #for ruch in poprawne_ruchy:
+                #print(ruch.notacja)
             podswietl_ruchy(klikniecia_gracza, ekran, poprawne_ruchy)
         plansza.wyswietl_figury(ekran)
         for event in p.event.get():
@@ -108,9 +126,9 @@ def graj(root):
                 running = False
             if event.type == p.MOUSEBUTTONDOWN:
                 pos = p.mouse.get_pos()
+                print(pos)
                 if pos[0]<=670 and pos[0]>=30 and pos[1]<=700 and pos[1]>=60:
                     pole_x, pole_y = klikniecie(ekran, pos[0], pos[1])
-
                     if wybrane_pole == (pole_x, pole_y):
                         wybrane_pole = ()
                         klikniecia_gracza = []
@@ -120,15 +138,22 @@ def graj(root):
                     #print(plansza.board)
                     if len(klikniecia_gracza) == 2:
                         ruch = Ruch(klikniecia_gracza[0], klikniecia_gracza[1], plansza.board)
-                        print(ruch.notacja)
+                        #print(ruch.notacja)
                         if ruch in poprawne_ruchy:
                             plansza.wykonaj_ruch(ruch)
                             czy_wykonano_ruch = True
                         wybrane_pole = ()
                         klikniecia_gracza = []
+
+                if pos[0]<=900 and pos[0]>=700 and pos[1]<=745 and pos[1]>=670:
+                    plansza.cofnij_ruch()
+                    plansza.wyswietl_figury(ekran)
+                    print("cofnieto ruch")
+                    czy_wykonano_ruch = True
                     #print(plansza.board)
+
         if czy_wykonano_ruch:
-            print("essa")
+            #print("essa")
             poprawne_ruchy = plansza.aktualizuj_ruchy()
             # for ruch in poprawne_ruchy:
             #     print(ruch.notacja)
