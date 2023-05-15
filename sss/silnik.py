@@ -51,16 +51,43 @@ class Plansza:
     def aktualizuj_ruchy(self):
         ruchy = self.generuj_ruchy()
 
-        # for ruch in range(len(ruchy)):
-        #     self.wykonaj_ruch(ruchy[ruch])
-        #     ruchy_przeciwnika = self.generuj_ruchy()
-        #
-        #     for ruch_p in ruchy_przeciwnika:
-        #         if ruch_p
+        for ruch in range(len(ruchy)):
+
+            self.wykonaj_ruch(ruchy[ruch])
+
+            ruchy_przeciwnika = self.generuj_ruchy()
+
+            if not self.ruch_bialych:
+                for ruch_p in ruchy_przeciwnika:
+                    if ruch_p.cel_x == self.pozycja_krolaB[1] and ruch_p.cel_y == self.pozycja_krolaB[0]:
+                        ruchy = self.board[self.pozycja_krolaB[1]][self.pozycja_krolB[0]].generuj_poprawne_ruchy(self.board)
+
+            self.cofnij_ruch(ruchy[ruch])
+
+
+        if self.ruch_bialych:
+            self.ruch_bialych = False
+        else:
+            self.ruch_bialych = True
+
 
         return ruchy
 
     #def czy_szach(self):
+
+    def cofnij_ruch(self, ruch):
+        if self.board[ruch.start_x][ruch.start_y] is None:
+            return
+        self.board[ruch.start_x][ruch.start_y].rzad = ruch.start_x
+        self.board[ruch.start_x][ruch.start_y].kolumna = ruch.start_x
+        self.board[ruch.cel_x][ruch.cel_y] = None
+        self.board[ruch.start_x][ruch.start_y] = ruch.przesuwana_figura
+
+        self.historia_ruchow.remove(ruch)
+        if self.ruch_bialych:
+            self.ruch_bialych = False
+        else:
+            self.ruch_bialych = True
 
     def generuj_ruchy(self):
         poprawne_ruchy = []
@@ -77,8 +104,8 @@ class Plansza:
         return poprawne_ruchy
 
     def wykonaj_ruch(self, ruch):
-        #if self.board[ruch.start_x][ruch.start_y] is None:
-            #return
+        if self.board[ruch.start_x][ruch.start_y] is None:
+            return
         # if self.board[ruch.cel_x][ruch.cel_y] is not None:
         #     if self.board[ruch.start_x][ruch.start_y].kolor == self.board[ruch.cel_x][ruch.cel_y].kolor:
         #         return
