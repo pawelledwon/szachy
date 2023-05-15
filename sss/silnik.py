@@ -50,31 +50,30 @@ class Plansza:
 
     def aktualizuj_ruchy(self):
         ruchy = self.generuj_ruchy()
-        # if self.ruch_bialych:
-        #     kolor = 'Bialy'
-        # else:
-        #     kolor = 'Czarny'
-        #
-        # for ruch in range(len(ruchy)):
-        #
-        #
-        #     self.wykonaj_ruch(ruchy[ruch])
-        #     print(ruchy[ruch].notacja)
-        #     if self.ruch_bialych:
-        #         self.ruch_bialych = False
-        #     else:
-        #         self.ruch_bialych = True
-        #
-        #     if self.czy_szach(self.pozycja_krolaB, self.pozycja_krolaC, kolor):
-        #         ruchy.remove(ruchy[ruch])
-        #
-        #     if self.ruch_bialych:
-        #         self.ruch_bialych = False
-        #     else:
-        #         self.ruch_bialych = True
-        #
-        #     self.cofnij_ruch()
+        if self.ruch_bialych:
+            kolor = 'Bialy'
+        else:
+            kolor = 'Czarny'
 
+        for ruch in range(len(ruchy) - 1, -1, -1):
+
+
+            self.wykonaj_ruch(ruchy[ruch])
+            print(ruchy[ruch].notacja)
+            if self.ruch_bialych:
+                self.ruch_bialych = False
+            else:
+                self.ruch_bialych = True
+
+            if self.czy_szach(self.pozycja_krolaB, self.pozycja_krolaC, kolor):
+                ruchy.remove(ruchy[ruch])
+
+            if self.ruch_bialych:
+                self.ruch_bialych = False
+            else:
+                self.ruch_bialych = True
+
+            self.cofnij_ruch()
 
         return ruchy
 
