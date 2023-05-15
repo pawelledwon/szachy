@@ -126,7 +126,7 @@ def graj(root):
                 running = False
             if event.type == p.MOUSEBUTTONDOWN:
                 pos = p.mouse.get_pos()
-                print(pos)
+                #print(pos)
                 if pos[0]<=670 and pos[0]>=30 and pos[1]<=700 and pos[1]>=60:
                     pole_x, pole_y = klikniecie(ekran, pos[0], pos[1])
                     if wybrane_pole == (pole_x, pole_y):
