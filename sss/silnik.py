@@ -15,14 +15,15 @@ class Plansza:
             [Pionek("Czarny", 1, 0, Zdjecia["cPionek"]), Pionek("Czarny", 1, 1, Zdjecia["cPionek"]), Pionek("Czarny", 1, 2, Zdjecia["cPionek"]), Pionek("Czarny", 1 ,3, Zdjecia["cPionek"]), Pionek("Czarny", 1, 4, Zdjecia["cPionek"]), Pionek("Czarny", 1, 5, Zdjecia["cPionek"]), Pionek("Czarny", 1, 6, Zdjecia["cPionek"]), Pionek("Czarny", 1, 7, Zdjecia["cPionek"])],
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
-            [None, None, None, Skoczek("Czarny", 4, 3, Zdjecia["cSkoczek"]), None, None, None, None],
+            [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
             [Pionek("Bialy", 6, 0, Zdjecia["bPionek"]), Pionek("Bialy", 6, 1, Zdjecia["bPionek"]), Pionek("Bialy", 6, 2, Zdjecia["bPionek"]), Pionek("Bialy", 6, 3, Zdjecia["bPionek"]), Pionek("Bialy", 6, 4, Zdjecia["bPionek"]), Pionek("Bialy", 6, 5, Zdjecia["bPionek"]), Pionek("Bialy", 6, 6, Zdjecia["bPionek"]), Pionek("Bialy", 6, 7, Zdjecia["bPionek"])],
             [Wieza("Bialy", 7, 0, Zdjecia["bWieza"]), Skoczek("Bialy", 7, 1, Zdjecia["bSkoczek"]), Goniec("Bialy", 7, 2, Zdjecia["bGoniec"]), Hetman("Bialy", 7, 3, Zdjecia["bHetman"]), Krol("Bialy", 7, 4, Zdjecia["bKrol"]), Goniec("Bialy", 7, 5, Zdjecia["bGoniec"]), Skoczek("Bialy", 7, 6, Zdjecia["bSkoczek"]), Wieza("Bialy", 7, 7, Zdjecia["bWieza"])]
         ]
         self.historia_ruchow = []
         self.ruch_bialych = True
-
+        self.pozycja_krolaB = (0, 4)
+        self.pozycja_krolaC = (7, 4)
 
     def wyswietl_plansze(self, ekran):
         p.draw.rect(ekran, "black", p.Rect(25, 55, 650, 650))
@@ -48,6 +49,20 @@ class Plansza:
         #             p.draw.rect(ekran, (255,0,0), (35+pole_x*80, 65+pole_y*80, 70, 70), 2)
 
     def aktualizuj_ruchy(self):
+        ruchy = self.generuj_ruchy()
+
+        # for ruch in range(len(ruchy)):
+        #     self.wykonaj_ruch(ruchy[ruch])
+        #     ruchy_przeciwnika = self.generuj_ruchy()
+        #
+        #     for ruch_p in ruchy_przeciwnika:
+        #         if ruch_p
+
+        return ruchy
+
+    #def czy_szach(self):
+
+    def generuj_ruchy(self):
         poprawne_ruchy = []
         for r in range(len(self.board)):
             for c in range(len(self.board[r])):
@@ -67,8 +82,9 @@ class Plansza:
         # if self.board[ruch.cel_x][ruch.cel_y] is not None:
         #     if self.board[ruch.start_x][ruch.start_y].kolor == self.board[ruch.cel_x][ruch.cel_y].kolor:
         #         return
-        if (self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Czarny') or (not self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Bialy'):
-            return
+        # if (self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Czarny') or (not self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Bialy'):
+        #     return
+
         self.board[ruch.start_x][ruch.start_y].rzad = ruch.cel_x
         self.board[ruch.start_x][ruch.start_y].kolumna = ruch.cel_y
         self.board[ruch.start_x][ruch.start_y] = None
@@ -78,6 +94,11 @@ class Plansza:
             self.ruch_bialych = False
         else:
             self.ruch_bialych = True
+        if ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Bialy':
+            self.pozycja_krolaB = (ruch.cel_x, ruch.cel_y)
+        elif ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Czarny':
+            self.pozycja_krolaC = (ruch.cel_x, ruch.cel_y)
+
 
 
 

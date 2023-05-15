@@ -29,14 +29,14 @@ class Skoczek(Figura):
                 if board[self.rzad - 2][self.kolumna + 1].kolor != self.kolor:
                     self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna + 1, self.rzad - 2), board))
 
-        if self.kolumna < 5 and self.rzad > 0:
+        if self.kolumna < 6 and self.rzad > 0:
             if board[self.rzad - 1][self.kolumna + 2] is None:
                 self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna + 2, self.rzad - 1), board))
             else:
                 if board[self.rzad - 1][self.kolumna + 2].kolor != self.kolor:
                     self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna + 2, self.rzad - 1), board))
 
-        if self.kolumna < 5 and self.rzad < 7:
+        if self.kolumna < 6 and self.rzad < 7:
             if board[self.rzad + 1][self.kolumna + 2] is None:
                 self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna + 2, self.rzad + 1), board))
             else:
