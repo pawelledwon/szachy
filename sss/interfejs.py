@@ -124,7 +124,7 @@ def graj(root):
 
             if event.type == p.QUIT:
                 running = False
-            if event.type == p.MOUSEBUTTONDOWN:
+            if event.type == p.MOUSEBUTTONDOWN and event.button == 1:
                 pos = p.mouse.get_pos()
                 #print(pos)
                 if pos[0]<=670 and pos[0]>=30 and pos[1]<=700 and pos[1]>=60:

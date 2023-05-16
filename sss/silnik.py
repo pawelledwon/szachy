@@ -59,7 +59,7 @@ class Plansza:
 
 
             self.wykonaj_ruch(ruchy[ruch])
-            print(ruchy[ruch].notacja)
+            #print(ruchy[ruch].notacja)
             if self.ruch_bialych:
                 self.ruch_bialych = False
             else:
