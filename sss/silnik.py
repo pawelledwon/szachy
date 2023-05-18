@@ -8,6 +8,7 @@ from ruch import *
 import pygame as p
 
 
+
 class Plansza:
     def __init__(self, Zdjecia):
         self.board = [
@@ -20,10 +21,13 @@ class Plansza:
             [Pionek("Bialy", 6, 0, Zdjecia["bPionek"]), Pionek("Bialy", 6, 1, Zdjecia["bPionek"]), Pionek("Bialy", 6, 2, Zdjecia["bPionek"]), Pionek("Bialy", 6, 3, Zdjecia["bPionek"]), Pionek("Bialy", 6, 4, Zdjecia["bPionek"]), Pionek("Bialy", 6, 5, Zdjecia["bPionek"]), Pionek("Bialy", 6, 6, Zdjecia["bPionek"]), Pionek("Bialy", 6, 7, Zdjecia["bPionek"])],
             [Wieza("Bialy", 7, 0, Zdjecia["bWieza"]), Skoczek("Bialy", 7, 1, Zdjecia["bSkoczek"]), Goniec("Bialy", 7, 2, Zdjecia["bGoniec"]), Hetman("Bialy", 7, 3, Zdjecia["bHetman"]), Krol("Bialy", 7, 4, Zdjecia["bKrol"]), Goniec("Bialy", 7, 5, Zdjecia["bGoniec"]), Skoczek("Bialy", 7, 6, Zdjecia["bSkoczek"]), Wieza("Bialy", 7, 7, Zdjecia["bWieza"])]
         ]
+        self.zdjecia = Zdjecia
         self.historia_ruchow = []
         self.ruch_bialych = True
         self.pozycja_krolaB = (0, 4)
         self.pozycja_krolaC = (7, 4)
+        self.szachmat = False
+        self.pat = False
 
     def wyswietl_plansze(self, ekran):
         p.draw.rect(ekran, "black", p.Rect(25, 55, 650, 650))
@@ -57,16 +61,16 @@ class Plansza:
 
         for ruch in range(len(ruchy) - 1, -1, -1):
 
-
             self.wykonaj_ruch(ruchy[ruch])
-            print(ruchy[ruch].notacja)
+            #print(ruchy[ruch].notacja)
             if self.ruch_bialych:
                 self.ruch_bialych = False
             else:
                 self.ruch_bialych = True
 
-            if self.czy_szach(self.pozycja_krolaB, self.pozycja_krolaC, kolor):
+            if self.czy_szach(kolor):
                 ruchy.remove(ruchy[ruch])
+                self.szach = True
 
             if self.ruch_bialych:
                 self.ruch_bialych = False
@@ -74,10 +78,15 @@ class Plansza:
                 self.ruch_bialych = True
 
             self.cofnij_ruch()
+        if len(ruchy) == 0:
+            if self.czy_szach(kolor):
+                self.szachmat = True
+            else:
+                self.pat = True
 
         return ruchy
 
-    def czy_szach(self, pozycja_krolaB, pozycja_krolaC, kolor):
+    def czy_szach(self, kolor):
         if self.ruch_bialych:
             self.ruch_bialych = False
         else:
@@ -91,16 +100,16 @@ class Plansza:
             self.ruch_bialych = True
 
         for ruch in ruchy_przeciwnika:
-            if kolor == 'Bialy' and ruch.cel_x == pozycja_krolaB[0] and ruch.cel_y == pozycja_krolaB[1]:
+            if kolor == 'Bialy' and ruch.cel_x == self.pozycja_krolaB[0] and ruch.cel_y == self.pozycja_krolaB[1]:
                 return True
-            if kolor == 'Czarny' and ruch.cel_x == pozycja_krolaC[0] and ruch.cel_y == pozycja_krolaC[1]:
+            if kolor == 'Czarny' and ruch.cel_x == self.pozycja_krolaC[0] and ruch.cel_y == self.pozycja_krolaC[1]:
                 return True
         return False
 
     def cofnij_ruch(self):
         # if self.board[ruch.start_x][ruch.start_y] is None:
         #     return
-        if len(self.historia_ruchow) != 0:
+        if len(self.historia_ruchow) > 0:
             ruch = self.historia_ruchow.pop()
             #print(ruch.cel_x, ruch.cel_y)
             self.board[ruch.start_x][ruch.start_y] = ruch.przesuwana_figura
@@ -123,7 +132,15 @@ class Plansza:
         #     self.ruch_bialych = False
         # else:
         #     self.ruch_bialych = True
-
+    def promocja(self):
+        if len(self.historia_ruchow) != 0:
+            ostatni_ruch = self.historia_ruchow[-1]
+            figura = ostatni_ruch.przesuwana_figura
+            if figura.nazwa == 'Pionek':
+                figura.sprawdz_czy_promocja()
+                if figura.promocja == True:
+                    awansowany_pionek = figura
+                    self.board[awansowany_pionek.rzad][awansowany_pionek.kolumna] = Hetman("Bialy", awansowany_pionek.rzad, awansowany_pionek.kolumna, self.zdjecia["bHetman"])
     def generuj_ruchy(self):
         poprawne_ruchy = []
         for r in range(len(self.board)):
@@ -144,8 +161,8 @@ class Plansza:
         # if self.board[ruch.cel_x][ruch.cel_y] is not None:
         #     if self.board[ruch.start_x][ruch.start_y].kolor == self.board[ruch.cel_x][ruch.cel_y].kolor:
         #         return
-        if (self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Czarny') or (not self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Bialy'):
-            return
+        # if (self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Czarny') or (not self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Bialy'):
+        #     return
 
         self.board[ruch.start_x][ruch.start_y].rzad = ruch.cel_x
         self.board[ruch.start_x][ruch.start_y].kolumna = ruch.cel_y
@@ -156,6 +173,7 @@ class Plansza:
             self.ruch_bialych = False
         else:
             self.ruch_bialych = True
+
         if ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Bialy':
             self.pozycja_krolaB = (ruch.cel_x, ruch.cel_y)
         elif ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Czarny':
