@@ -145,15 +145,16 @@ class Plansza:
                     #self.board[awansowany_pionek.rzad][awansowany_pionek.kolumna] = Hetman("Bialy", awansowany_pionek.rzad, awansowany_pionek.kolumna, self.zdjecia["bHetman"])
     def promuj_pionka(self, pos):
         ostatni_ruch = self.historia_ruchow[-1]
+        kolor = ostatni_ruch.przesuwana_figura.kolor
         pionek = ostatni_ruch.przesuwana_figura
         if pos[0] <= 780:
-            self.board[pionek.rzad][pionek.kolumna] = Wieza("Bialy", pionek.rzad, pionek.kolumna, self.zdjecia["bWieza"])
+            self.board[pionek.rzad][pionek.kolumna] = Wieza(kolor, pionek.rzad, pionek.kolumna, self.zdjecia[kolor[0].lower() +"Wieza"])
         elif pos[0] >= 785 and pos[0] <= 865:
-            self.board[pionek.rzad][pionek.kolumna] = Hetman("Bialy", pionek.rzad, pionek.kolumna, self.zdjecia["bHetman"])
+            self.board[pionek.rzad][pionek.kolumna] = Hetman(kolor, pionek.rzad, pionek.kolumna, self.zdjecia[kolor[0].lower() + "Hetman"])
         elif pos[0] >= 870 and pos[0] <= 950:
-            self.board[pionek.rzad][pionek.kolumna] = Skoczek("Bialy", pionek.rzad, pionek.kolumna, self.zdjecia["bSkoczek"])
+            self.board[pionek.rzad][pionek.kolumna] = Skoczek(kolor, pionek.rzad, pionek.kolumna, self.zdjecia[kolor[0].lower() + "Skoczek"])
         elif pos[0] >= 955 and pos[0] <= 1035:
-            self.board[pionek.rzad][pionek.kolumna] = Goniec("Bialy", pionek.rzad, pionek.kolumna, self.zdjecia["bGoniec"])
+            self.board[pionek.rzad][pionek.kolumna] = Goniec(kolor, pionek.rzad, pionek.kolumna, self.zdjecia[kolor[0].lower() + "Goniec"])
     def generuj_ruchy(self):
         poprawne_ruchy = []
         for r in range(len(self.board)):

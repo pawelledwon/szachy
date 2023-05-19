@@ -79,13 +79,13 @@ def wybor_przy_promocji(ekran, kolor):
     p.draw.rect(ekran, "white", p.Rect(955, 20, 80, 80))
 
 
-    if kolor == 'Czarny':
+    if kolor == 'Bialy':
         ekran.blit(Zdjecia["cWieza"], (710, 30))
         ekran.blit(Zdjecia["cHetman"], (795, 25))
         ekran.blit(Zdjecia["cSkoczek"], (880, 25))
         ekran.blit(Zdjecia["cGoniec"], (960, 25))
 
-    if kolor == 'Bialy':
+    if kolor == 'Czarny':
         ekran.blit(Zdjecia["bWieza"], (710, 30))
         ekran.blit(Zdjecia["bHetman"], (795, 25))
         ekran.blit(Zdjecia["bSkoczek"], (880, 25))
@@ -163,7 +163,7 @@ def graj(root):
     klikniecia_gracza = []
     poprawne_ruchy = plansza.aktualizuj_ruchy()
     czy_wykonano_ruch = False
-
+    czy_cofnieto = False
 
     while(running):
         plansza.wyswietl_plansze(ekran)
@@ -184,7 +184,7 @@ def graj(root):
             podswietl_ruchy(klikniecia_gracza, ekran, poprawne_ruchy)
 
         #plansza.promocja()
-        if plansza.promocja_pionka:
+        if plansza.promocja_pionka and not czy_cofnieto:
             wybor_przy_promocji(ekran, kolor)
             while(plansza.promocja_pionka):
                 for event in p.event.get():
@@ -229,6 +229,7 @@ def graj(root):
                         if ruch in poprawne_ruchy:
                             plansza.wykonaj_ruch(ruch)
                             czy_wykonano_ruch = True
+                            czy_cofnieto = False
                         wybrane_pole = ()
                         klikniecia_gracza = []
 
@@ -237,6 +238,7 @@ def graj(root):
                     plansza.wyswietl_figury(ekran)
                     #print("cofnieto ruch")
                     czy_wykonano_ruch = True
+                    czy_cofnieto = True
                     #print(plansza.board)
 
 
@@ -247,7 +249,6 @@ def graj(root):
             plansza.promocja()
             plansza.aktualizuj_ruchy()
             poprawne_ruchy = plansza.aktualizuj_ruchy()
-
             if plansza.szachmat:
                     plansza.wyswietl_plansze(ekran)
                     if kolor == 'Bialy':

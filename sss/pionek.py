@@ -41,17 +41,18 @@ class Pionek(Figura):
                     self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna + 1, self.rzad - 1), board))
 
          else:
-            if board[self.rzad+1][self.kolumna] is None:
-                self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna, self.rzad+1), board))
-                if self.rzad == 1 and board[self.rzad + 2][self.kolumna] is None:
-                    self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna, self.rzad + 2), board))
-                    self.pierwszy = False
-            if self.kolumna - 1 >= 0:
-                if board[self.rzad + 1][self.kolumna - 1] is not None and board[self.rzad + 1][self.kolumna - 1].kolor != 'Czarny':
-                    self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna - 1, self.rzad + 1), board))
-            if self.kolumna + 1 <= 7:
-                if board[self.rzad + 1][self.kolumna + 1] is not None and board[self.rzad + 1][self.kolumna + 1].kolor != 'Czarny':
-                    self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna + 1, self.rzad + 1), board))
+            if self.rzad<7:
+                if board[self.rzad+1][self.kolumna] is None:
+                    self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna, self.rzad+1), board))
+                    if self.rzad == 1 and board[self.rzad + 2][self.kolumna] is None:
+                        self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna, self.rzad + 2), board))
+                        self.pierwszy = False
+                if self.kolumna - 1 >= 0:
+                    if board[self.rzad + 1][self.kolumna - 1] is not None and board[self.rzad + 1][self.kolumna - 1].kolor != 'Czarny':
+                        self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna - 1, self.rzad + 1), board))
+                if self.kolumna + 1 <= 7:
+                    if board[self.rzad + 1][self.kolumna + 1] is not None and board[self.rzad + 1][self.kolumna + 1].kolor != 'Czarny':
+                        self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna + 1, self.rzad + 1), board))
 
          return self.lista_ruchow
          #elif self.kolor == "Czarny":
