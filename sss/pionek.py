@@ -21,7 +21,7 @@ class Pionek(Figura):
     def sprawdz_czy_promocja(self):
         if self.kolor == 'Bialy' and self.rzad == 0:
             self.promocja = True
-            print("promocja")
+            #print("promocja")
         elif self.kolor == 'Czarny' and self.rzad == 7:
             self.promocja = True
 

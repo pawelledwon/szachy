@@ -91,6 +91,7 @@ def wybor_przy_promocji(ekran, kolor):
         ekran.blit(Zdjecia["bSkoczek"], (880, 25))
         ekran.blit(Zdjecia["bGoniec"], (965, 25))
 
+    p.display.flip()
 
 
 
@@ -166,7 +167,13 @@ def graj(root):
 
     while(running):
         plansza.wyswietl_plansze(ekran)
+        plansza.wyswietl_figury(ekran)
         draw_button(ekran, p.Rect(700, 675, 200, 70), 'aliceblue', "Cofnij ruch")
+
+        if plansza.ruch_bialych:
+            kolor = 'Bialy'
+        else:
+            kolor = 'Czarny'
 
         if len(plansza.historia_ruchow) != 0:
             ostatni_ruch = plansza.historia_ruchow[-1]
@@ -174,17 +181,23 @@ def graj(root):
 
         if len(klikniecia_gracza) == 1:
             podswietl_pole(klikniecia_gracza, ekran)
-            #for ruch in poprawne_ruchy:
-
-                #print(ruch.notacja)
             podswietl_ruchy(klikniecia_gracza, ekran, poprawne_ruchy)
 
-        if plansza.ruch_bialych:
-            kolor = 'Bialy'
-        else:
-            kolor = 'Czarny'
-
-        wybor_przy_promocji(ekran, kolor)
+        #plansza.promocja()
+        if plansza.promocja_pionka:
+            wybor_przy_promocji(ekran, kolor)
+            while(plansza.promocja_pionka):
+                for event in p.event.get():
+                    if event.type == p.QUIT:
+                        running = False
+                        plansza.promocja_pionka = False
+                    elif event.type == p.MOUSEBUTTONDOWN:
+                        pos = p.mouse.get_pos()
+                        if pos[0]<=1035 and pos[0]>=700 and pos[1]<=100 and pos[1]>=20:
+                           plansza.promuj_pionka(pos)
+                           plansza.promocja_pionka = False
+                           poprawne_ruchy = plansza.aktualizuj_ruchy()
+                           p.draw.rect(ekran, "lightblue", p.Rect(695, 15, 345, 90))
 
         if plansza.czy_szach(kolor):
             if kolor == 'Bialy':

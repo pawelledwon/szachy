@@ -28,6 +28,7 @@ class Plansza:
         self.pozycja_krolaC = (7, 4)
         self.szachmat = False
         self.pat = False
+        self.promocja_pionka = False
 
     def wyswietl_plansze(self, ekran):
         p.draw.rect(ekran, "black", p.Rect(25, 55, 650, 650))
@@ -139,8 +140,20 @@ class Plansza:
             if figura.nazwa == 'Pionek':
                 figura.sprawdz_czy_promocja()
                 if figura.promocja == True:
-                    awansowany_pionek = figura
-                    self.board[awansowany_pionek.rzad][awansowany_pionek.kolumna] = Hetman("Bialy", awansowany_pionek.rzad, awansowany_pionek.kolumna, self.zdjecia["bHetman"])
+                    self.promocja_pionka = True
+                    #awansowany_pionek = figura
+                    #self.board[awansowany_pionek.rzad][awansowany_pionek.kolumna] = Hetman("Bialy", awansowany_pionek.rzad, awansowany_pionek.kolumna, self.zdjecia["bHetman"])
+    def promuj_pionka(self, pos):
+        ostatni_ruch = self.historia_ruchow[-1]
+        pionek = ostatni_ruch.przesuwana_figura
+        if pos[0] <= 780:
+            self.board[pionek.rzad][pionek.kolumna] = Wieza("Bialy", pionek.rzad, pionek.kolumna, self.zdjecia["bWieza"])
+        elif pos[0] >= 785 and pos[0] <= 865:
+            self.board[pionek.rzad][pionek.kolumna] = Hetman("Bialy", pionek.rzad, pionek.kolumna, self.zdjecia["bHetman"])
+        elif pos[0] >= 870 and pos[0] <= 950:
+            self.board[pionek.rzad][pionek.kolumna] = Skoczek("Bialy", pionek.rzad, pionek.kolumna, self.zdjecia["bSkoczek"])
+        elif pos[0] >= 955 and pos[0] <= 1035:
+            self.board[pionek.rzad][pionek.kolumna] = Goniec("Bialy", pionek.rzad, pionek.kolumna, self.zdjecia["bGoniec"])
     def generuj_ruchy(self):
         poprawne_ruchy = []
         for r in range(len(self.board)):
