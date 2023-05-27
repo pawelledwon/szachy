@@ -64,4 +64,6 @@ class Krol(Figura):
             else:
                 if board[self.rzad][self.kolumna + 1].kolor != board[self.rzad][self.kolumna].kolor:
                     self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna + 1, self.rzad), board))
+
+
         return self.lista_ruchow

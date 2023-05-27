@@ -5,6 +5,7 @@ from goniec import *
 from krol import *
 from hetman import *
 from ruch import *
+from roszada import ZasadyRoszady
 import pygame as p
 
 
@@ -24,11 +25,13 @@ class Plansza:
         self.zdjecia = Zdjecia
         self.historia_ruchow = []
         self.ruch_bialych = True
-        self.pozycja_krolaB = (0, 4)
-        self.pozycja_krolaC = (7, 4)
+        self.pozycja_krolaB = (7, 4)
+        self.pozycja_krolaC = (0, 4)
         self.szachmat = False
         self.pat = False
         self.promocja_pionka = False
+        self.czy_aktualnie_roszada = ZasadyRoszady(True, True, True, True)
+        self.historia_roszad = [ZasadyRoszady(self.czy_aktualnie_roszada.cH, self.czy_aktualnie_roszada.cK, self.czy_aktualnie_roszada.bH, self.czy_aktualnie_roszada.bK)]
 
     def wyswietl_plansze(self, ekran):
         p.draw.rect(ekran, "black", p.Rect(25, 55, 650, 650))
@@ -54,7 +57,16 @@ class Plansza:
         #             p.draw.rect(ekran, (255,0,0), (35+pole_x*80, 65+pole_y*80, 70, 70), 2)
 
     def aktualizuj_ruchy(self):
+
+        tymcz_zasady_rosz = ZasadyRoszady(self.czy_aktualnie_roszada.cH, self.czy_aktualnie_roszada.cK, self.czy_aktualnie_roszada.bH, self.czy_aktualnie_roszada.bK)
+
         ruchy = self.generuj_ruchy()
+        #print(tymcz_zasady_rosz.cH, tymcz_zasady_rosz.cK, tymcz_zasady_rosz.bH, tymcz_zasady_rosz.bK)
+        if self.ruch_bialych:
+            self.ruchy_z_roszada(self.pozycja_krolaB[0], self.pozycja_krolaB[1], ruchy, self.board[self.pozycja_krolaB[0]][self.pozycja_krolaB[1]].kolor)
+        else:
+            self.ruchy_z_roszada(self.pozycja_krolaC[0], self.pozycja_krolaC[1], ruchy, self.board[self.pozycja_krolaC[0]][self.pozycja_krolaC[1]].kolor)
+
         if self.ruch_bialych:
             kolor = 'Bialy'
         else:
@@ -78,15 +90,62 @@ class Plansza:
             else:
                 self.ruch_bialych = True
 
+
             self.cofnij_ruch()
         if len(ruchy) == 0:
             if self.czy_szach(kolor):
                 self.szachmat = True
             else:
                 self.pat = True
+        else:
+            self.szachmat = False
+            self.pat = False
 
+        self.czy_aktualnie_roszada = tymcz_zasady_rosz
         return ruchy
 
+    def sprawdz_czy_roszada_mozliwa(self, ruch):
+        if ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Bialy':
+            self.czy_aktualnie_roszada.bK = False
+            self.czy_aktualnie_roszada.bH = False
+        elif ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Czarny':
+            self.czy_aktualnie_roszada.cK = False
+            self.czy_aktualnie_roszada.cH = False
+        elif ruch.przesuwana_figura.nazwa == 'Wieza' and ruch.przesuwana_figura.kolor == 'Bialy':
+            if ruch.start_x == 7:
+                if ruch.start_y == 0:
+                    self.czy_aktualnie_roszada.bH = False
+                elif ruch.start_y == 7:
+                    self.czy_aktualnie_roszada.bK = False
+        elif ruch.przesuwana_figura.nazwa == 'Wieza' and ruch.przesuwana_figura.kolor == 'Czarny':
+            if ruch.start_x == 0:
+                if ruch.start_y == 0:
+                    self.czy_aktualnie_roszada.cH = False
+                elif ruch.start_y == 7:
+                    self.czy_aktualnie_roszada.cK = False
+    def ruchy_z_roszada(self, r, c, poprawne_ruchy, kolor):
+        if self.czy_pole_pod_atakiem(r, c):
+            return
+        if (self.ruch_bialych and self.czy_aktualnie_roszada.bK) or (not self.ruch_bialych and self.czy_aktualnie_roszada.cK):
+            if self.board[r][c+1] is None and self.board[r][c+2] is None:
+                if not self.czy_pole_pod_atakiem(r, c+1) and not self.czy_pole_pod_atakiem(r, c+2):
+                    poprawne_ruchy.append(Ruch((c, r), (c+2, r), self.board, czy_roszada=True))
+
+        if (self.ruch_bialych and self.czy_aktualnie_roszada.bH) or (not self.ruch_bialych and self.czy_aktualnie_roszada.cH):
+            if self.board[r][c-1] is None and self.board[r][c-2] is None and self.board[r][c-3] is None:
+                if not self.czy_pole_pod_atakiem(r, c-1) and not self.czy_pole_pod_atakiem(r, c-2):
+                    poprawne_ruchy.append(Ruch((c, r), (c-2, r), self.board, czy_roszada=True))
+
+
+    def czy_pole_pod_atakiem(self, r, c):
+        self.ruch_bialych = not self.ruch_bialych
+        ruchy_przeciwnika = self.generuj_ruchy()
+        self.ruch_bialych = not self.ruch_bialych
+        for ruch in ruchy_przeciwnika:
+            if ruch.cel_x == r and ruch.cel_y == c:
+                return True
+
+        return False
     def czy_szach(self, kolor):
         if self.ruch_bialych:
             self.ruch_bialych = False
@@ -107,10 +166,12 @@ class Plansza:
                 return True
         return False
 
+
     def cofnij_ruch(self):
         # if self.board[ruch.start_x][ruch.start_y] is None:
         #     return
         if len(self.historia_ruchow) > 0:
+
             ruch = self.historia_ruchow.pop()
             #print(ruch.cel_x, ruch.cel_y)
             self.board[ruch.start_x][ruch.start_y] = ruch.przesuwana_figura
@@ -123,16 +184,30 @@ class Plansza:
                 self.ruch_bialych = False
             else:
                 self.ruch_bialych = True
+
             if ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Bialy':
                 self.pozycja_krolaB = (ruch.start_x, ruch.start_y)
             elif ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Czarny':
                 self.pozycja_krolaC = (ruch.start_x, ruch.start_y)
 
+            self.historia_roszad.pop()
+            nowe_zasady = self.historia_roszad[-1]
+            self.czy_aktualnie_roszada = ZasadyRoszady(nowe_zasady.cH, nowe_zasady.cK, nowe_zasady.bH, nowe_zasady.bK)
 
-        # if self.ruch_bialych:
-        #     self.ruch_bialych = False
-        # else:
-        #     self.ruch_bialych = True
+            if ruch.czy_roszada:
+
+                if ruch.cel_y - ruch.start_y == 2:
+
+                    self.board[ruch.cel_x][ruch.cel_y + 1] = self.board[ruch.cel_x][ruch.cel_y - 1]
+                    self.board[ruch.cel_x][ruch.cel_y - 1] = None
+                    self.board[ruch.cel_x][ruch.cel_y + 1].kolumna = ruch.cel_y + 1
+                else:
+
+                    self.board[ruch.cel_x][ruch.cel_y - 2] = self.board[ruch.cel_x][ruch.cel_y + 1]
+                    self.board[ruch.cel_x][ruch.cel_y + 1] = None
+                    self.board[ruch.cel_x][ruch.cel_y - 2].kolumna = ruch.cel_y - 2
+
+
     def promocja(self):
         if len(self.historia_ruchow) != 0:
             ostatni_ruch = self.historia_ruchow[-1]
@@ -170,28 +245,43 @@ class Plansza:
         return poprawne_ruchy
 
     def wykonaj_ruch(self, ruch):
-        if self.board[ruch.start_x][ruch.start_y] is None:
-            return
-        # if self.board[ruch.cel_x][ruch.cel_y] is not None:
-        #     if self.board[ruch.start_x][ruch.start_y].kolor == self.board[ruch.cel_x][ruch.cel_y].kolor:
-        #         return
-        # if (self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Czarny') or (not self.ruch_bialych and self.board[ruch.start_x][ruch.start_y].kolor == 'Bialy'):
-        #     return
+            #print(ruch.notacja)
+        #if ruch.przesuwana_figura is not None:
 
-        self.board[ruch.start_x][ruch.start_y].rzad = ruch.cel_x
-        self.board[ruch.start_x][ruch.start_y].kolumna = ruch.cel_y
-        self.board[ruch.start_x][ruch.start_y] = None
-        self.board[ruch.cel_x][ruch.cel_y] = ruch.przesuwana_figura
-        self.historia_ruchow.append(ruch)
-        if self.ruch_bialych:
-            self.ruch_bialych = False
-        else:
-            self.ruch_bialych = True
 
-        if ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Bialy':
-            self.pozycja_krolaB = (ruch.cel_x, ruch.cel_y)
-        elif ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Czarny':
-            self.pozycja_krolaC = (ruch.cel_x, ruch.cel_y)
+            self.board[ruch.start_x][ruch.start_y].rzad = ruch.cel_x
+            self.board[ruch.start_x][ruch.start_y].kolumna = ruch.cel_y
+            self.board[ruch.start_x][ruch.start_y] = None
+            self.board[ruch.cel_x][ruch.cel_y] = ruch.przesuwana_figura
+            self.historia_ruchow.append(ruch)
+
+            if self.ruch_bialych:
+                self.ruch_bialych = False
+            else:
+                self.ruch_bialych = True
+
+            if ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == "Bialy":
+                self.pozycja_krolaB = (ruch.cel_x, ruch.cel_y)
+            elif ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == "Czarny":
+                self.pozycja_krolaC = (ruch.cel_x, ruch.cel_y)
+
+            if ruch.czy_roszada:
+                if ruch.cel_y - ruch.start_y == 2:
+                    self.board[ruch.cel_x][ruch.cel_y - 1] = self.board[ruch.cel_x][ruch.cel_y + 1]
+                    self.board[ruch.cel_x][ruch.cel_y + 1] = None
+                    self.board[ruch.cel_x][ruch.cel_y - 1].kolumna = ruch.cel_y - 1
+
+                else:
+                    self.board[ruch.cel_x][ruch.cel_y + 1] = self.board[ruch.cel_x][ruch.cel_y - 2]
+                    self.board[ruch.cel_x][ruch.cel_y - 2] = None
+                    self.board[ruch.cel_x][ruch.cel_y + 1].kolumna = ruch.cel_y + 1
+
+
+
+            self.sprawdz_czy_roszada_mozliwa(ruch)
+            self.historia_roszad.append(ZasadyRoszady(self.czy_aktualnie_roszada.cH, self.czy_aktualnie_roszada.cK, self.czy_aktualnie_roszada.bH, self.czy_aktualnie_roszada.bK))
+
+
 
 
 

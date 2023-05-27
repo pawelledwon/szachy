@@ -3,6 +3,7 @@ from ruch import Ruch
 class Wieza(Figura):
     nr_zdjecia = 0
     nazwa = 'Wieza'
+    pierwszy = True
     def print(self):
         print(self.nazwa)
 
@@ -13,7 +14,6 @@ class Wieza(Figura):
             ekran.blit(self.zdjecie, (40+self.kolumna*80, 70+self.rzad*80))
 
     def generuj_poprawne_ruchy(self, board):
-
         for pole in range(1, self.rzad + 1):
              #print(pole)
              if board[self.rzad - pole][self.kolumna] is None:

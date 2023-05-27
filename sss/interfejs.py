@@ -191,11 +191,14 @@ def graj(root):
                     if event.type == p.QUIT:
                         running = False
                         plansza.promocja_pionka = False
+                        plansza.historia_ruchow[-1].przesuwana_figura.promocja = False
                     elif event.type == p.MOUSEBUTTONDOWN:
                         pos = p.mouse.get_pos()
                         if pos[0]<=1035 and pos[0]>=700 and pos[1]<=100 and pos[1]>=20:
                            plansza.promuj_pionka(pos)
                            plansza.promocja_pionka = False
+                           plansza.historia_ruchow[-1].przesuwana_figura.promocja = False
+                           #print(plansza.historia_ruchow[-1].przesuwana_figura.nazwa)
                            poprawne_ruchy = plansza.aktualizuj_ruchy()
                            p.draw.rect(ekran, "lightblue", p.Rect(695, 15, 345, 90))
 
@@ -211,6 +214,7 @@ def graj(root):
             if event.type == p.QUIT:
                 running = False
             elif event.type == p.MOUSEBUTTONDOWN:
+
                 pos = p.mouse.get_pos()
                 #print(pos)
                 if pos[0]<=670 and pos[0]>=30 and pos[1]<=700 and pos[1]>=60:
@@ -226,10 +230,12 @@ def graj(root):
                     if len(klikniecia_gracza) == 2:
                         ruch = Ruch(klikniecia_gracza[0], klikniecia_gracza[1], plansza.board)
                         #print(ruch.notacja)
-                        if ruch in poprawne_ruchy:
-                            plansza.wykonaj_ruch(ruch)
-                            czy_wykonano_ruch = True
-                            czy_cofnieto = False
+                        for i in range(len(poprawne_ruchy)):
+                            if ruch == poprawne_ruchy[i]:
+                                plansza.wykonaj_ruch(poprawne_ruchy[i])
+                                #print(ruch.czy_roszada)
+                                czy_wykonano_ruch = True
+                                czy_cofnieto = False
                         wybrane_pole = ()
                         klikniecia_gracza = []
 
@@ -239,6 +245,9 @@ def graj(root):
                     #print("cofnieto ruch")
                     czy_wykonano_ruch = True
                     czy_cofnieto = True
+                    # plansza.promocja()
+                    # if plansza.promocja_pionka:
+                    #     plansza.historia_ruchow[-1]
                     #print(plansza.board)
 
 
@@ -246,9 +255,13 @@ def graj(root):
 
 
         if czy_wykonano_ruch:
-            plansza.promocja()
-            plansza.aktualizuj_ruchy()
+            # print(plansza.pozycja_krolaC)
+            # print(plansza.pozycja_krolaB)
+            # print('-------------------')
+            if not czy_cofnieto:
+                plansza.promocja()
             poprawne_ruchy = plansza.aktualizuj_ruchy()
+
             if plansza.szachmat:
                     plansza.wyswietl_plansze(ekran)
                     if kolor == 'Bialy':
