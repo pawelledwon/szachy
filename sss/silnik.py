@@ -92,6 +92,7 @@ class Plansza:
 
 
             self.cofnij_ruch()
+        #self.czy_roszada()
         if len(ruchy) == 0:
             if self.czy_szach(kolor):
                 self.szachmat = True

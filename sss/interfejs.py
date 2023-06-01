@@ -4,8 +4,14 @@ from tkinter import font
 from silnik import *
 import pygame as p
 from tkinter import messagebox
+import time
+import threading
 
 Zdjecia = {}
+stop_event = threading.Event()
+timerB_aktywny = False
+remaining_time_B = 600
+remaining_time_C = 600
 
 def main():
     p.init()
@@ -93,7 +99,22 @@ def wybor_przy_promocji(ekran, kolor):
 
     p.display.flip()
 
+def timer():
+    global timerB_aktywny, remaining_time_B, remaining_time_C
 
+    if not stop_event.set():
+        if timerB_aktywny:
+            seconds = remaining_time_B % 60
+            minutes = int(remaining_time_B / 60) % 60
+            print(f"{minutes:02}:{seconds:02}")
+            remaining_time_B -= 1
+            time.sleep(1)
+        else:
+            seconds = remaining_time_C % 60
+            minutes = int(remaining_time_C / 60) % 60
+            print(f"{minutes:02}:{seconds:02}")
+            remaining_time_C -= 1
+            time.sleep(1)
 
 
 
@@ -143,6 +164,7 @@ def koniec_gry_mat(root, kolor):
     root.destroy()
     main()
 
+
 def koniec_gry_pat(root):
     root.withdraw()
     messagebox.showinfo("Koniec gry!", "PAT!!! Naciśnij OK aby wrocić do menu")
@@ -150,21 +172,11 @@ def koniec_gry_pat(root):
     root.destroy()
     main()
 
-def graj(root):
-    root.withdraw()
-    ekran = p.display.set_mode((1200,768))
-    p.display.set_caption('Szachy')
-    zegar = p.time.Clock()
-    ekran.fill(p.Color("lightblue"))
-    zaladuj_zdjecia()
-    running = True
-    plansza = Plansza(Zdjecia)
-    wybrane_pole = ()
-    klikniecia_gracza = []
-    poprawne_ruchy = plansza.aktualizuj_ruchy()
-    czy_wykonano_ruch = False
-    czy_cofnieto = False
-
+def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root):
+    global remaining_time_B, remaining_time_C, stop_event
+    t1 = threading.Thread(target = timer)
+    t1.setDaemon(True)
+    t1.start()
     while(running):
         plansza.wyswietl_plansze(ekran)
         plansza.wyswietl_figury(ekran)
@@ -202,6 +214,7 @@ def graj(root):
                            poprawne_ruchy = plansza.aktualizuj_ruchy()
                            p.draw.rect(ekran, "lightblue", p.Rect(695, 15, 345, 90))
 
+
         if plansza.czy_szach(kolor):
             if kolor == 'Bialy':
                 podswietl_szacha(plansza.pozycja_krolaB, ekran)
@@ -219,6 +232,7 @@ def graj(root):
                 #print(pos)
                 if pos[0]<=670 and pos[0]>=30 and pos[1]<=700 and pos[1]>=60:
                     pole_x, pole_y = klikniecie(ekran, pos[0], pos[1])
+
                     if wybrane_pole == (pole_x, pole_y):
                         wybrane_pole = ()
                         klikniecia_gracza = []
@@ -226,6 +240,7 @@ def graj(root):
                         wybrane_pole = (pole_x, pole_y)
                         klikniecia_gracza.append(wybrane_pole)
                     #print(plansza.board)
+
 
                     if len(klikniecia_gracza) == 2:
                         ruch = Ruch(klikniecia_gracza[0], klikniecia_gracza[1], plansza.board)
@@ -255,9 +270,12 @@ def graj(root):
 
 
         if czy_wykonano_ruch:
-            # print(plansza.pozycja_krolaC)
-            # print(plansza.pozycja_krolaB)
-            # print('-------------------')
+            stop_event.set()
+            stop_event.clear()
+            t = threading.Thread(target=timer)
+            t.setDaemon(True)
+            t.start()
+
             if not czy_cofnieto:
                 plansza.promocja()
             poprawne_ruchy = plansza.aktualizuj_ruchy()
@@ -283,7 +301,33 @@ def graj(root):
 
 
         zegar.tick(15)
+
         p.display.flip()
+
+def graj(root):
+    root.withdraw()
+    ekran = p.display.set_mode((1200,768))
+    p.display.set_caption('Szachy')
+    zegar = p.time.Clock()
+    ekran.fill(p.Color("lightblue"))
+    zaladuj_zdjecia()
+    running = True
+    plansza = Plansza(Zdjecia)
+    wybrane_pole = ()
+    klikniecia_gracza = []
+    poprawne_ruchy = plansza.aktualizuj_ruchy()
+    czy_wykonano_ruch = False
+    czy_cofnieto = False
+
+    gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root)
+
+
+
+
+
+
+
+
 
 
     p.quit()
