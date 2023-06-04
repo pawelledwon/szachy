@@ -25,7 +25,10 @@ class Pionek(Figura):
         elif self.kolor == 'Czarny' and self.rzad == 7:
             self.promocja = True
 
+
+
     def generuj_poprawne_ruchy(self, board):
+         from silnik import czy_aktualnie_en_passant
          if self.kolor == 'Bialy':
             if board[self.rzad-1][self.kolumna] is None:
                 self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna, self.rzad-1), board))
@@ -36,9 +39,13 @@ class Pionek(Figura):
             if self.kolumna - 1 >= 0:
                 if board[self.rzad - 1][self.kolumna - 1] is not None and board[self.rzad - 1][self.kolumna - 1].kolor != 'Bialy':
                     self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna - 1, self.rzad - 1), board))
+                elif (self.rzad-1, self.kolumna-1) == czy_aktualnie_en_passant:
+                    self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna - 1, self.rzad - 1), board, czy_roszada=False, czy_en_passant=True))
             if self.kolumna + 1 <= 7:
                 if board[self.rzad - 1][self.kolumna + 1] is not None and board[self.rzad - 1][self.kolumna + 1].kolor != 'Bialy':
                     self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna + 1, self.rzad - 1), board))
+                elif (self.rzad-1, self.kolumna+1) == czy_aktualnie_en_passant:
+                    self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna + 1, self.rzad - 1), board, czy_roszada=False, czy_en_passant=True))
 
          else:
             if self.rzad<7:
@@ -50,9 +57,13 @@ class Pionek(Figura):
                 if self.kolumna - 1 >= 0:
                     if board[self.rzad + 1][self.kolumna - 1] is not None and board[self.rzad + 1][self.kolumna - 1].kolor != 'Czarny':
                         self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna - 1, self.rzad + 1), board))
+                    elif (self.rzad+1, self.kolumna-1) == czy_aktualnie_en_passant:
+                        self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna - 1, self.rzad + 1), board, czy_roszada=False,czy_en_passant=True))
                 if self.kolumna + 1 <= 7:
                     if board[self.rzad + 1][self.kolumna + 1] is not None and board[self.rzad + 1][self.kolumna + 1].kolor != 'Czarny':
                         self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna + 1, self.rzad + 1), board))
+                    elif (self.rzad+1, self.kolumna+1) == czy_aktualnie_en_passant:
+                        self.lista_ruchow.append(Ruch((self.kolumna, self.rzad), (self.kolumna + 1, self.rzad + 1), board, czy_roszada=False,czy_en_passant=True))
 
          return self.lista_ruchow
          #elif self.kolor == "Czarny":

@@ -1,17 +1,14 @@
 import tkinter
-from tkinter import font
+from tkinter import ttk
 
 from silnik import *
 import pygame as p
 from tkinter import messagebox
-import time
 import threading
 
 Zdjecia = {}
-stop_event = threading.Event()
-timerB_aktywny = False
-remaining_time_B = 600
-remaining_time_C = 600
+
+
 
 def main():
     p.init()
@@ -31,14 +28,14 @@ def main():
 
 
 
-    b_graj = tkinter.Button(root, text='GRAJ',command =lambda: graj(root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
+    b_graj = tkinter.Button(root, text='GRAJ',command =lambda: graj(root, backgroundimage),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
     b_graj.place (x = 30, y= 180)
 
     b_wyjdz=tkinter.Button(root, text='WYJDZ', command = przyciskwyjscia, bg = 'chocolate',font = 'arial', fg = 'white', width = 20)
     b_wyjdz.place(x=30, y=390)
 
-    b_graj = tkinter.Button(root, text='GRAJ ONLINE',command =lambda: graj(root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
-    b_graj.place (x = 30, y= 250)
+    b_graj_o = tkinter.Button(root, text='GRAJ ONLINE',command =lambda: graj(root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
+    b_graj_o.place (x = 30, y= 250)
 
     b_wyjdz=tkinter.Button(root, text='ZMIEN KOLOR PLANSZY', command = lambda:przyciskwyjscia, bg = 'chocolate',font = 'arial', fg = 'white', width = 20)
     b_wyjdz.place(x=30, y=320)
@@ -50,7 +47,35 @@ def przyciskwyjscia():
     p.quit()
     exit()
 
+def wybor_opcji(root, backgroundimage, remaining_time_B, remaining_time_C):
+    for widget in root.winfo_children():
+        widget.destroy()
 
+    background_label = tkinter.Label(root, image=backgroundimage)
+    background_label.place(x=0, y=0, relwidth=1, relheight=1)
+    def wybrany(event):
+        selected_option = myCombo.get()
+        myLabel.config(text=selected_option)
+
+        if selected_option == '10min':
+            print('10min')
+        elif selected_option == '20min':
+            print('20min')
+        elif selected_option == '15min':
+            print('15min')
+        elif selected_option == '5min':
+            print('5min')
+
+    options = ['10min', '5min', '15min', '20min']
+    clicked = tkinter.StringVar()
+
+    myLabel = tkinter.Label(root, text="")
+
+
+    myCombo = ttk.Combobox(root, value=options, state="readonly")
+    myCombo.set("10min")  # Set default value to "10min"
+    myCombo.bind("<<ComboboxSelected>>", wybrany)
+    myCombo.grid(row=5, column=3, padx=20, pady=100, sticky='w')
 def zaladuj_zdjecia():
 
     bierki = ["cWieza", "cSkoczek", "cGoniec", "cHetman", "cKrol","cPionek","bWieza", "bSkoczek", "bGoniec", "bHetman", "bKrol", "bPionek"]
@@ -99,23 +124,15 @@ def wybor_przy_promocji(ekran, kolor):
 
     p.display.flip()
 
-def timer():
-    global timerB_aktywny, remaining_time_B, remaining_time_C
+def timer_C_wyswietl(ekran, text):
+    p.draw.rect(ekran, "black", p.Rect(595, 5, 80, 40))
+    p.draw.rect(ekran, "white", p.Rect(600, 10, 70, 30))
+    ekran.blit(p.font.SysFont('Arial', 25).render(text, True, (0,0,0)), (610, 10))
 
-    if not stop_event.set():
-        if timerB_aktywny:
-            seconds = remaining_time_B % 60
-            minutes = int(remaining_time_B / 60) % 60
-            print(f"{minutes:02}:{seconds:02}")
-            remaining_time_B -= 1
-            time.sleep(1)
-        else:
-            seconds = remaining_time_C % 60
-            minutes = int(remaining_time_C / 60) % 60
-            print(f"{minutes:02}:{seconds:02}")
-            remaining_time_C -= 1
-            time.sleep(1)
-
+def timer_B_wyswietl(ekran, text):
+    p.draw.rect(ekran, "black", p.Rect(595, 710, 80, 40))
+    p.draw.rect(ekran, "white", p.Rect(600, 715, 70, 30))
+    ekran.blit(p.font.SysFont('Arial', 25).render(text, True, (0,0,0)), (610, 715))
 
 
 def klikniecie(ekran, x, y):
@@ -172,11 +189,15 @@ def koniec_gry_pat(root):
     root.destroy()
     main()
 
-def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root):
-    global remaining_time_B, remaining_time_C, stop_event
-    t1 = threading.Thread(target = timer)
-    t1.setDaemon(True)
-    t1.start()
+def koniec_gry_czas(root, kolor):
+    root.withdraw()
+    messagebox.showinfo("Koniec gry!", "Brak czasu!!! %s kolor wygrywa!!! \nNaciśnij OK aby wrocić do menu" % (kolor))
+    p.quit()
+    root.destroy()
+    main()
+def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, remaining_time_B, remaining_time_C):
+    timerB_aktywny = True
+    sek = 0
     while(running):
         plansza.wyswietl_plansze(ekran)
         plansza.wyswietl_figury(ekran)
@@ -257,25 +278,14 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                 if pos[0]<=900 and pos[0]>=700 and pos[1]<=745 and pos[1]>=670:
                     plansza.cofnij_ruch()
                     plansza.wyswietl_figury(ekran)
-                    #print("cofnieto ruch")
                     czy_wykonano_ruch = True
                     czy_cofnieto = True
-                    # plansza.promocja()
-                    # if plansza.promocja_pionka:
-                    #     plansza.historia_ruchow[-1]
-                    #print(plansza.board)
-
 
         plansza.wyswietl_figury(ekran)
 
 
         if czy_wykonano_ruch:
-            stop_event.set()
-            stop_event.clear()
-            t = threading.Thread(target=timer)
-            t.setDaemon(True)
-            t.start()
-
+            timerB_aktywny = not timerB_aktywny
             if not czy_cofnieto:
                 plansza.promocja()
             poprawne_ruchy = plansza.aktualizuj_ruchy()
@@ -300,11 +310,38 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
             czy_wykonano_ruch = False
 
 
-        zegar.tick(15)
 
+        zegar.tick(16)
+        sek += 62.5
+        if sek == 1000:
+            sek = 0
+            if timerB_aktywny:
+                seconds = remaining_time_B % 60
+                minutes = int(remaining_time_B / 60) % 60
+                czas_pozostaly = f"{minutes:02}:{seconds:02}"
+                timer_B_wyswietl(ekran, czas_pozostaly)
+                remaining_time_B -= 1
+            else:
+                seconds = remaining_time_C % 60
+                minutes = int(remaining_time_C / 60) % 60
+                czas_pozostaly = f"{minutes:02}:{seconds:02}"
+                timer_C_wyswietl(ekran, czas_pozostaly)
+
+                remaining_time_C -= 1
         p.display.flip()
+        if remaining_time_B == -1:
+            koniec_gry_czas(root, 'Czarny')
+        if remaining_time_C == -1:
+            koniec_gry_czas(root, 'Bialy')
 
-def graj(root):
+
+
+def graj(root, backgroundimage):
+    remaining_time_B = 600
+    remaining_time_C = 600
+    wybor_opcji(root, backgroundimage, remaining_time_B, remaining_time_C)
+
+
     root.withdraw()
     ekran = p.display.set_mode((1200,768))
     p.display.set_caption('Szachy')
@@ -319,17 +356,8 @@ def graj(root):
     czy_wykonano_ruch = False
     czy_cofnieto = False
 
-    gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root)
-
-
-
-
-
-
-
-
-
+    gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, remaining_time_B, remaining_time_C)
 
     p.quit()
-    root.destroy()
+
 

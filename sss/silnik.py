@@ -9,7 +9,7 @@ from roszada import ZasadyRoszady
 import pygame as p
 
 
-
+czy_aktualnie_en_passant = ()
 class Plansza:
     def __init__(self, Zdjecia):
         self.board = [
@@ -57,7 +57,8 @@ class Plansza:
         #             p.draw.rect(ekran, (255,0,0), (35+pole_x*80, 65+pole_y*80, 70, 70), 2)
 
     def aktualizuj_ruchy(self):
-
+        global czy_aktualnie_en_passant
+        tymcz_zasady_en_passant = czy_aktualnie_en_passant
         tymcz_zasady_rosz = ZasadyRoszady(self.czy_aktualnie_roszada.cH, self.czy_aktualnie_roszada.cK, self.czy_aktualnie_roszada.bH, self.czy_aktualnie_roszada.bK)
 
         ruchy = self.generuj_ruchy()
@@ -102,6 +103,7 @@ class Plansza:
             self.szachmat = False
             self.pat = False
 
+        czy_aktualnie_en_passant = tymcz_zasady_en_passant
         self.czy_aktualnie_roszada = tymcz_zasady_rosz
         return ruchy
 
@@ -169,8 +171,7 @@ class Plansza:
 
 
     def cofnij_ruch(self):
-        # if self.board[ruch.start_x][ruch.start_y] is None:
-        #     return
+        global czy_aktualnie_en_passant
         if len(self.historia_ruchow) > 0:
 
             ruch = self.historia_ruchow.pop()
@@ -191,19 +192,30 @@ class Plansza:
             elif ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == 'Czarny':
                 self.pozycja_krolaC = (ruch.start_x, ruch.start_y)
 
+            if ruch.czy_en_passant:
+                print("guwno")
+
+                self.board[ruch.cel_x][ruch.cel_y] = None
+
+                self.board[ruch.start_x][ruch.cel_y] = ruch.przechwytywana_figura
+
+                czy_aktualnie_en_passant = (ruch.cel_x, ruch.cel_y)
+
+
+            if ruch.przesuwana_figura.nazwa == 'Pionek' and (ruch.start_x - ruch.cel_x == -2 or ruch.start_x - ruch.cel_x == 2):
+                czy_aktualnie_en_passant = ()
+
+
             self.historia_roszad.pop()
             nowe_zasady = self.historia_roszad[-1]
             self.czy_aktualnie_roszada = ZasadyRoszady(nowe_zasady.cH, nowe_zasady.cK, nowe_zasady.bH, nowe_zasady.bK)
 
             if ruch.czy_roszada:
-
                 if ruch.cel_y - ruch.start_y == 2:
-
                     self.board[ruch.cel_x][ruch.cel_y + 1] = self.board[ruch.cel_x][ruch.cel_y - 1]
                     self.board[ruch.cel_x][ruch.cel_y - 1] = None
                     self.board[ruch.cel_x][ruch.cel_y + 1].kolumna = ruch.cel_y + 1
                 else:
-
                     self.board[ruch.cel_x][ruch.cel_y - 2] = self.board[ruch.cel_x][ruch.cel_y + 1]
                     self.board[ruch.cel_x][ruch.cel_y + 1] = None
                     self.board[ruch.cel_x][ruch.cel_y - 2].kolumna = ruch.cel_y - 2
@@ -247,8 +259,7 @@ class Plansza:
 
     def wykonaj_ruch(self, ruch):
             #print(ruch.notacja)
-        #if ruch.przesuwana_figura is not None:
-
+            global czy_aktualnie_en_passant
 
             self.board[ruch.start_x][ruch.start_y].rzad = ruch.cel_x
             self.board[ruch.start_x][ruch.start_y].kolumna = ruch.cel_y
@@ -265,6 +276,20 @@ class Plansza:
                 self.pozycja_krolaB = (ruch.cel_x, ruch.cel_y)
             elif ruch.przesuwana_figura.nazwa == 'Krol' and ruch.przesuwana_figura.kolor == "Czarny":
                 self.pozycja_krolaC = (ruch.cel_x, ruch.cel_y)
+
+            if ruch.czy_en_passant:
+                if not self.ruch_bialych:
+                    self.board[ruch.cel_x + 1][ruch.cel_y] = None
+                else:
+                    self.board[ruch.cel_x - 1][ruch.cel_y] = None
+
+
+
+            if ruch.przesuwana_figura.nazwa == 'Pionek' and (ruch.cel_x - ruch.start_x == -2 or ruch.cel_x - ruch.start_x == 2):
+                czy_aktualnie_en_passant = ((ruch.start_x + ruch.cel_x)//2, ruch.start_y)
+            else:
+                czy_aktualnie_en_passant = ()
+
 
             if ruch.czy_roszada:
                 if ruch.cel_y - ruch.start_y == 2:
