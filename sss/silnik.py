@@ -105,6 +105,16 @@ class Plansza:
 
         czy_aktualnie_en_passant = tymcz_zasady_en_passant
         self.czy_aktualnie_roszada = tymcz_zasady_rosz
+
+        for i in range(len(ruchy)):
+            for j in range(i + 1, len(ruchy)):
+                if ruchy[i].notacja_uzytkownika == ruchy[j].notacja_uzytkownika:
+                    if ruchy[i].start_y == ruchy[j].start_y:
+                        ruchy[i].notacja_uzytkownika = ruchy[i].notacja_uzytkownika[:1] + str(8 - ruchy[i].start_x) + ruchy[i].notacja_uzytkownika[1:]
+                        ruchy[j].notacja_uzytkownika = ruchy[j].notacja_uzytkownika[:1] + str(8 - ruchy[i].start_x) + ruchy[j].notacja_uzytkownika[1:]
+                    else:
+                        ruchy[i].notacja_uzytkownika = ruchy[i].notacja_uzytkownika[:1] + str(ruchy[i].slownik[ruchy[i].start_y + 1]) + ruchy[i].notacja_uzytkownika[1:]
+                        ruchy[j].notacja_uzytkownika = ruchy[j].notacja_uzytkownika[:1] + str(ruchy[j].slownik[ruchy[j].start_y + 1]) + ruchy[j].notacja_uzytkownika[1:]
         return ruchy
 
     def sprawdz_czy_roszada_mozliwa(self, ruch):
@@ -193,14 +203,9 @@ class Plansza:
                 self.pozycja_krolaC = (ruch.start_x, ruch.start_y)
 
             if ruch.czy_en_passant:
-                print("guwno")
-
                 self.board[ruch.cel_x][ruch.cel_y] = None
-
                 self.board[ruch.start_x][ruch.cel_y] = ruch.przechwytywana_figura
-
                 czy_aktualnie_en_passant = (ruch.cel_x, ruch.cel_y)
-
 
             if ruch.przesuwana_figura.nazwa == 'Pionek' and (ruch.start_x - ruch.cel_x == -2 or ruch.start_x - ruch.cel_x == 2):
                 czy_aktualnie_en_passant = ()

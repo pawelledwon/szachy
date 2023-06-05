@@ -1,8 +1,9 @@
 import tkinter
 from tkinter import ttk
-
 from silnik import *
 import pygame as p
+import pygame_menu
+
 from tkinter import messagebox
 import threading
 
@@ -174,6 +175,13 @@ def podswietl_ruchy(klikniecia_gracza, ekran, poprawne_ruchy):
 def podswietl_szacha(pos_krola, ekran):
     p.draw.rect(ekran, "coral3", p.Rect(pos_krola[1]*80+30, pos_krola[0]*80+60, 80, 80))
 
+def wyswietl_historie_ruchow(ekran, historia_ruchow):
+    text_area_height = len(historia_ruchow) * 18 + 20
+    text_area_width = 100
+    p.draw.rect(ekran, (0, 0, 0), (795, 5, text_area_width + 10, text_area_height + 10))
+    p.draw.rect(ekran, (200, 200, 200), (800, 10, text_area_width, text_area_height))
+
+
 def koniec_gry_mat(root, kolor):
     root.withdraw()
     messagebox.showinfo("Koniec gry!", "MAT!!! %s kolor wygrywa!!! \nNaciśnij OK aby wrocić do menu" % (kolor))
@@ -198,6 +206,7 @@ def koniec_gry_czas(root, kolor):
 def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, remaining_time_B, remaining_time_C):
     timerB_aktywny = True
     sek = 0
+    wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
     while(running):
         plansza.wyswietl_plansze(ekran)
         plansza.wyswietl_figury(ekran)
@@ -260,20 +269,22 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                     else:
                         wybrane_pole = (pole_x, pole_y)
                         klikniecia_gracza.append(wybrane_pole)
+
                     #print(plansza.board)
 
 
                     if len(klikniecia_gracza) == 2:
-                        ruch = Ruch(klikniecia_gracza[0], klikniecia_gracza[1], plansza.board)
-                        #print(ruch.notacja)
-                        for i in range(len(poprawne_ruchy)):
-                            if ruch == poprawne_ruchy[i]:
-                                plansza.wykonaj_ruch(poprawne_ruchy[i])
-                                #print(ruch.czy_roszada)
-                                czy_wykonano_ruch = True
-                                czy_cofnieto = False
-                        wybrane_pole = ()
-                        klikniecia_gracza = []
+                            ruch = Ruch(klikniecia_gracza[0], klikniecia_gracza[1], plansza.board)
+                            #print(ruch.notacja)
+                            for i in range(len(poprawne_ruchy)):
+                                if ruch == poprawne_ruchy[i]:
+                                    plansza.wykonaj_ruch(poprawne_ruchy[i])
+                                    #print(ruch.czy_roszada)
+                                    czy_wykonano_ruch = True
+                                    print(poprawne_ruchy[i].notacja_uzytkownika)
+                                    czy_cofnieto = False
+                            wybrane_pole = ()
+                            klikniecia_gracza = []
 
                 if pos[0]<=900 and pos[0]>=700 and pos[1]<=745 and pos[1]>=670:
                     plansza.cofnij_ruch()
@@ -285,6 +296,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
 
 
         if czy_wykonano_ruch:
+            wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
             timerB_aktywny = not timerB_aktywny
             if not czy_cofnieto:
                 plansza.promocja()
@@ -359,5 +371,6 @@ def graj(root, backgroundimage):
     gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, remaining_time_B, remaining_time_C)
 
     p.quit()
+    root.destroy()
 
 
