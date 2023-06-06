@@ -109,7 +109,7 @@ def zaladuj_zdjecia():
             zdjecie_ze_zmienionym_rozmiarem = p.transform.scale(zdjecie,(65,70))
         Zdjecia[figura] = zdjecie_ze_zmienionym_rozmiarem
 
-def draw_button(surface, rect, color, text):
+def draw_button(surface, rect, color, text, czy_strzalka):
     font = p.font.SysFont(p.font.get_default_font(), 24)
     p.draw.rect(surface, color, rect, border_radius=5)
     p.draw.rect(surface, (0, 0, 0), rect, 2, border_radius=5)
@@ -117,11 +117,11 @@ def draw_button(surface, rect, color, text):
     text_rect = text_surf.get_rect(center=rect.center)
     surface.blit(text_surf, text_rect)
 
-    # Create a separate text surface for the "<-----" text
-    arrow_surf = font.render("<-----", True, (0, 0, 0))
-    arrow_rect = arrow_surf.get_rect(center=rect.center)
-    arrow_rect.center = (arrow_rect.centerx, rect.centery + text_rect.height/2 + 5)
-    surface.blit(arrow_surf, arrow_rect)
+    if czy_strzalka:
+        arrow_surf = font.render("<-----", True, (0, 0, 0))
+        arrow_rect = arrow_surf.get_rect(center=rect.center)
+        arrow_rect.center = (arrow_rect.centerx, rect.centery + text_rect.height/2 + 5)
+        surface.blit(arrow_surf, arrow_rect)
 def wybor_przy_promocji(ekran, kolor):
     p.draw.rect(ekran, "black", p.Rect(695, 15, 345, 90))
     p.draw.rect(ekran, "white", p.Rect(700, 20, 80, 80))
@@ -150,9 +150,9 @@ def timer_C_wyswietl(ekran, text):
     ekran.blit(p.font.SysFont('Arial', 25).render(text, True, (0,0,0)), (610, 10))
 
 def timer_B_wyswietl(ekran, text):
-    p.draw.rect(ekran, "black", p.Rect(595, 710, 80, 40))
-    p.draw.rect(ekran, "white", p.Rect(600, 715, 70, 30))
-    ekran.blit(p.font.SysFont('Arial', 25).render(text, True, (0,0,0)), (610, 715))
+    p.draw.rect(ekran, "black", p.Rect(595, 728, 80, 40))
+    p.draw.rect(ekran, "white", p.Rect(600, 733, 70, 30))
+    ekran.blit(p.font.SysFont('Arial', 25).render(text, True, (0,0,0)), (610, 733))
 
 
 def klikniecie(ekran, x, y):
@@ -233,16 +233,22 @@ def koniec_gry_czas(root, kolor):
     root.destroy()
     main()
 
+def wyjdz_do_menu(root):
+    p.quit()
+    root.destroy()
+    main()
 
 def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, remaining_time_B, remaining_time_C, gra_treningowa):
     timerB_aktywny = True
     sek = 0
     wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
+    draw_button(ekran, p.Rect(865, 675, 150, 53), 'aliceblue', "Zapisz grę", False)
+    draw_button(ekran, p.Rect(1030, 675, 150, 53), 'aliceblue', "Wyjdź", False)
     while(running):
         plansza.wyswietl_plansze(ekran)
         plansza.wyswietl_figury(ekran)
         if gra_treningowa:
-            draw_button(ekran, p.Rect(700, 675, 200, 70), 'aliceblue', "Cofnij ruch")
+            draw_button(ekran, p.Rect(700, 675, 150, 53), 'aliceblue', "Cofnij ruch", True)
 
         if plansza.ruch_bialych:
             kolor = 'Bialy'
@@ -319,11 +325,17 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                             klikniecia_gracza = []
 
                 if gra_treningowa:
-                    if pos[0]<=900 and pos[0]>=700 and pos[1]<=745 and pos[1]>=670:
+                    if pos[0]<=850 and pos[0]>=700 and pos[1]<=723 and pos[1]>=670:
                         plansza.cofnij_ruch()
                         plansza.wyswietl_figury(ekran)
                         czy_wykonano_ruch = True
                         czy_cofnieto = True
+
+                #if pos[0]<=1015 and pos[0]>=865 and pos[1]<=723 and pos[1]>=670:
+
+                if pos[0]<=1180 and pos[0]>=1030 and pos[1]<=723 and pos[1]>=670:
+                    wyjdz_do_menu(root)
+
 
         plansza.wyswietl_figury(ekran)
 

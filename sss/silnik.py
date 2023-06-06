@@ -35,6 +35,22 @@ class Plansza:
 
     def wyswietl_plansze(self, ekran):
         p.draw.rect(ekran, "black", p.Rect(25, 55, 650, 650))
+        font = p.font.Font('freesansbold.ttf', 24)
+
+        numery = '87654321'
+        i = 0
+        for znak in numery:
+            notacja_18 = font.render(znak, True, (0, 0, 0))
+            ekran.blit(notacja_18, (5, 90+i))
+            i+=80
+
+        i = 0
+        litery = 'abcdefgh'
+        for znak in litery:
+            notacja_ah = font.render(znak, True, (0, 0, 0))
+            ekran.blit(notacja_ah, (60+i, 705))
+            i+=80
+
         for i in range(8):
             for j in range(8):
                 if( (i+j) % 2 ==0):
