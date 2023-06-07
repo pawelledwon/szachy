@@ -124,7 +124,7 @@ class Plansza:
 
         for i in range(len(ruchy)):
             for j in range(i + 1, len(ruchy)):
-                if ruchy[i].notacja_uzytkownika == ruchy[j].notacja_uzytkownika:
+                if ruchy[i].notacja_uzytkownika == ruchy[j].notacja_uzytkownika and ruchy[i].przesuwana_figura.nazwa != 'Pionek':
                     if ruchy[i].start_y == ruchy[j].start_y:
                         ruchy[i].notacja_uzytkownika = ruchy[i].notacja_uzytkownika[:1] + str(8 - ruchy[i].start_x) + ruchy[i].notacja_uzytkownika[1:]
                         ruchy[j].notacja_uzytkownika = ruchy[j].notacja_uzytkownika[:1] + str(8 - ruchy[i].start_x) + ruchy[j].notacja_uzytkownika[1:]

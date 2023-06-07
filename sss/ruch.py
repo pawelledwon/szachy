@@ -31,7 +31,7 @@ class Ruch:
                 self.notacja_uzytkownika = self.przesuwana_figura.nazwa[0] + str(self.slownik[self.cel_y + 1]) + str(8 - self.cel_x)
         else:
             if self.przesuwana_figura.nazwa == 'Pionek':
-                self.notacja_uzytkownika = str(self.slownik[self.start_x]) + 'x' + str(self.slownik[self.cel_y + 1]) + str(8 - self.cel_x)
+                self.notacja_uzytkownika = str(self.slownik[self.start_y+1]) + 'x' + str(self.slownik[self.cel_y + 1]) + str(8 - self.cel_x)
             else:
                 self.notacja_uzytkownika = self.przesuwana_figura.nazwa[0] + 'x' + str(self.slownik[self.cel_y + 1]) + str(8 - self.cel_x)
 
@@ -41,7 +41,7 @@ class Ruch:
                 self.przechwytywana_figura = Pionek("Czarny", self.cel_x + 1, self.cel_y, Zdjecia["cPionek"])
             else:
                 self.przechwytywana_figura = Pionek("Bialy", self.cel_x - 1, self.cel_y, Zdjecia["bPionek"])
-            self.notacja_uzytkownika = str(self.slownik[self.start_x]) + 'x' + str(self.slownik[self.cel_y + 1]) + str(8 - self.cel_x)
+            self.notacja_uzytkownika = str(self.slownik[self.start_y+1]) + 'x' + str(self.slownik[self.cel_y + 1]) + str(8 - self.cel_x)
 
         self.czy_roszada = czy_roszada
         if self.czy_roszada:

@@ -2,6 +2,7 @@ import tkinter
 from tkinter import ttk
 from silnik import *
 import pygame as p
+from  zapis_odczyt import *
 
 
 from tkinter import messagebox
@@ -242,7 +243,8 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
     timerB_aktywny = True
     sek = 0
     wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
-    draw_button(ekran, p.Rect(865, 675, 150, 53), 'aliceblue', "Zapisz grę", False)
+    draw_button(ekran, p.Rect(865, 665, 150, 33), 'aliceblue', "Zapisz grę", False)
+    draw_button(ekran, p.Rect(865, 708, 150, 33), 'aliceblue', "Wczytaj grę", False)
     draw_button(ekran, p.Rect(1030, 675, 150, 53), 'aliceblue', "Wyjdź", False)
     while(running):
         plansza.wyswietl_plansze(ekran)
@@ -324,6 +326,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                             wybrane_pole = ()
                             klikniecia_gracza = []
 
+                zapis_odczyt = Zapis_i_odczyt(plansza.historia_ruchow)
                 if gra_treningowa:
                     if pos[0]<=850 and pos[0]>=700 and pos[1]<=723 and pos[1]>=670:
                         plansza.cofnij_ruch()
@@ -331,7 +334,18 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                         czy_wykonano_ruch = True
                         czy_cofnieto = True
 
-                #if pos[0]<=1015 and pos[0]>=865 and pos[1]<=723 and pos[1]>=670:
+                    if pos[0]<=1015 and pos[0]>=865 and pos[1]<=741 and pos[1]>=708:
+                        odczytane_ruchy = zapis_odczyt.odczytaj_dane()
+                        zapis_odczyt.konwertuj_odczytane_dane(odczytane_ruchy)
+
+                elif len(plansza.historia_ruchow) == 0:
+                    if pos[0]<=1015 and pos[0]>=865 and pos[1]<=741 and pos[1]>=708:
+                        print(zapis_odczyt.odczytaj_dane())
+
+                if pos[0]<=1015 and pos[0]>=865 and pos[1]<=698 and pos[1]>=665:
+                    zapis_odczyt.zapisz_dane()
+                    print('zapisano dane')
+
 
                 if pos[0]<=1180 and pos[0]>=1030 and pos[1]<=723 and pos[1]>=670:
                     wyjdz_do_menu(root)
