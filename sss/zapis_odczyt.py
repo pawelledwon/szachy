@@ -1,7 +1,7 @@
+from copy import *
 class Zapis_i_odczyt:
     def __init__(self, lista_ruchow):
         self.lista_ruchow = lista_ruchow
-
 
     def zapisz_dane(self):
         dane_do_zapisania = ''
@@ -16,20 +16,39 @@ class Zapis_i_odczyt:
             lines = plik_wejsciowy.readlines()
             return lines[0]
 
-    def konwertuj_odczytane_dane(self, ruchy):
+    def konwertuj_odczytane_dane(self, ruchy, plansza):
         ruch = ''
         podzielone_ruchy = []
 
-        ruchy.replace(' ','')
-        print(ruchy)
         for i in range(len(ruchy)):
-            if i != ',':
+            if ruchy[i] != ',':
                 ruch += ruchy[i]
             else:
-                podzielone_ruchy.append(ruch)
+                podzielone_ruchy.append(ruch.strip())
                 ruch = ''
 
-        print(podzielone_ruchy)
+        mozliwe_ruchy = plansza.aktualizuj_ruchy()
+        print(plansza.board)
+        while len(podzielone_ruchy) > 0:
+            for j in range(len(mozliwe_ruchy)):
+                if podzielone_ruchy[0] == mozliwe_ruchy[j].notacja_uzytkownika:
+                    print(mozliwe_ruchy[j].notacja_uzytkownika)
+                    podzielone_ruchy.pop(0)
+                    plansza.wykonaj_ruch(mozliwe_ruchy[j])
+                    break
+            mozliwe_ruchy = plansza.aktualizuj_ruchy()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

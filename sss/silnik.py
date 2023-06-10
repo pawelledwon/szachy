@@ -10,6 +10,7 @@ import pygame as p
 
 
 czy_aktualnie_en_passant = ()
+
 class Plansza:
     def __init__(self, Zdjecia):
         self.board = [
@@ -90,9 +91,8 @@ class Plansza:
             kolor = 'Czarny'
 
         for ruch in range(len(ruchy) - 1, -1, -1):
-
             self.wykonaj_ruch(ruchy[ruch])
-            #print(ruchy[ruch].notacja)
+            print(ruchy[ruch].notacja)
             if self.ruch_bialych:
                 self.ruch_bialych = False
             else:
@@ -281,7 +281,6 @@ class Plansza:
     def wykonaj_ruch(self, ruch):
             #print(ruch.notacja)
             global czy_aktualnie_en_passant
-
             self.board[ruch.start_x][ruch.start_y].rzad = ruch.cel_x
             self.board[ruch.start_x][ruch.start_y].kolumna = ruch.cel_y
             self.board[ruch.start_x][ruch.start_y] = None

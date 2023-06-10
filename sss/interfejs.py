@@ -3,18 +3,27 @@ from tkinter import ttk
 from silnik import *
 import pygame as p
 from  zapis_odczyt import *
-
+import sys
 
 from tkinter import messagebox
 import threading
+import time
 
 Zdjecia = {}
 remaining_time_B = 600
 remaining_time_C = 600
 
+condition = threading.Lock()
+stop_event = threading.Event()
+event_timer = threading.Event()
 
 
 def main():
+    global remaining_time_B, remaining_time_C
+    time.sleep(1)
+    remaining_time_B = 600
+    remaining_time_C = 600
+    stop_event.clear()
     p.init()
     root = tkinter.Tk()         #tworzy okienko
     root.geometry('480x480')  #ustawia rozmiar
@@ -110,13 +119,19 @@ def zaladuj_zdjecia():
             zdjecie_ze_zmienionym_rozmiarem = p.transform.scale(zdjecie,(65,70))
         Zdjecia[figura] = zdjecie_ze_zmienionym_rozmiarem
 
-def draw_button(surface, rect, color, text, czy_strzalka):
+def draw_button(surface, rect, color, text, czy_strzalka, czy_aktywny = True):
     font = p.font.SysFont(p.font.get_default_font(), 24)
     p.draw.rect(surface, color, rect, border_radius=5)
-    p.draw.rect(surface, (0, 0, 0), rect, 2, border_radius=5)
-    text_surf = font.render(text, True, (0, 0, 0))
-    text_rect = text_surf.get_rect(center=rect.center)
-    surface.blit(text_surf, text_rect)
+    if czy_aktywny:
+        p.draw.rect(surface, (0, 0, 0), rect, 2, border_radius=5)
+        text_surf = font.render(text, True, (0, 0, 0))
+        text_rect = text_surf.get_rect(center=rect.center)
+        surface.blit(text_surf, text_rect)
+    else:
+        p.draw.rect(surface, "azure4", rect, 2, border_radius=5)
+        text_surf = font.render(text, True, "azure3")
+        text_rect = text_surf.get_rect(center=rect.center)
+        surface.blit(text_surf, text_rect)
 
     if czy_strzalka:
         arrow_surf = font.render("<-----", True, (0, 0, 0))
@@ -234,21 +249,77 @@ def koniec_gry_czas(root, kolor):
     root.destroy()
     main()
 
+def odliczaj_czas_B(ekran):
+        global remaining_time_B, condition
+
+        condition.acquire()
+        while remaining_time_B >= 0:
+            if stop_event.is_set():
+                break
+            seconds = remaining_time_B % 60
+            minutes = int(remaining_time_B / 60) % 60
+            czas_pozostaly = f"{minutes:02}:{seconds:02}"
+            remaining_time_B -= 1
+            if event_timer.is_set():
+                condition.release()
+                time.sleep(1)
+                condition.acquire()
+            time.sleep(1)
+            timer_B_wyswietl(ekran, czas_pozostaly)
+        condition.release()
+
+def odliczaj_czas_C(ekran):
+        global remaining_time_C, condition
+        condition.acquire()
+        while remaining_time_C >= 0:
+            if stop_event.is_set():
+                break
+            seconds = remaining_time_C % 60
+            minutes = int(remaining_time_C / 60) % 60
+            czas_pozostaly = f"{minutes:02}:{seconds:02}"
+            remaining_time_C -= 1
+            if not event_timer.is_set():
+                remaining_time_C -= 1
+                condition.release()
+                time.sleep(1)
+                condition.acquire()
+            timer_C_wyswietl(ekran, czas_pozostaly)
+            time.sleep(1)
+        condition.release()
+
 def wyjdz_do_menu(root):
+    root.withdraw()
     p.quit()
     root.destroy()
     main()
 
+
+
 def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, remaining_time_B, remaining_time_C, gra_treningowa):
     timerB_aktywny = True
-    sek = 0
+    czy_odczytano = False
+    wyjscie = False
+    t1 = threading.Thread(target=odliczaj_czas_B, args=(ekran,))
+    t2 = threading.Thread(target=odliczaj_czas_C, args=(ekran,))
     wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
+
     draw_button(ekran, p.Rect(865, 665, 150, 33), 'aliceblue', "Zapisz grę", False)
-    draw_button(ekran, p.Rect(865, 708, 150, 33), 'aliceblue', "Wczytaj grę", False)
-    draw_button(ekran, p.Rect(1030, 675, 150, 53), 'aliceblue', "Wyjdź", False)
+
+    draw_button(ekran, p.Rect(1030, 675, 150, 53), 'aliceblue', "Wyjdź do menu", False)
+    zapis_odczyt = Zapis_i_odczyt(plansza.historia_ruchow)
+    if not gra_treningowa:
+        t1.start()
+        time.sleep(0.25)
+        t2.start()
+
     while(running):
         plansza.wyswietl_plansze(ekran)
         plansza.wyswietl_figury(ekran)
+        if len(plansza.historia_ruchow) == 0:
+            draw_button(ekran, p.Rect(865, 708, 150, 33), 'aliceblue', "Wczytaj grę", False)
+        else:
+            draw_button(ekran, p.Rect(865, 708, 150, 33), 'aliceblue', "Wczytaj grę", False, False)
+
         if gra_treningowa:
             draw_button(ekran, p.Rect(700, 675, 150, 53), 'aliceblue', "Cofnij ruch", True)
 
@@ -274,6 +345,8 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                         running = False
                         plansza.promocja_pionka = False
                         plansza.historia_ruchow[-1].przesuwana_figura.promocja = False
+                        p.quit()
+                        root.destroy()
                     elif event.type == p.MOUSEBUTTONDOWN:
                         pos = p.mouse.get_pos()
                         if pos[0]<=1035 and pos[0]>=700 and pos[1]<=100 and pos[1]>=20:
@@ -293,11 +366,14 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
 
 
         for event in p.event.get():
-
             if event.type == p.QUIT:
+                stop_event.set()
+                time.sleep(1)
                 running = False
+                p.quit()
+                root.destroy()
+                wyjscie = True
             elif event.type == p.MOUSEBUTTONDOWN:
-
                 pos = p.mouse.get_pos()
                 #print(pos)
                 if pos[0]<=670 and pos[0]>=30 and pos[1]<=700 and pos[1]>=60:
@@ -309,8 +385,6 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                     else:
                         wybrane_pole = (pole_x, pole_y)
                         klikniecia_gracza.append(wybrane_pole)
-
-                    #print(plansza.board)
 
 
                     if len(klikniecia_gracza) == 2:
@@ -326,7 +400,8 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                             wybrane_pole = ()
                             klikniecia_gracza = []
 
-                zapis_odczyt = Zapis_i_odczyt(plansza.historia_ruchow)
+
+                zapis_odczyt.lista_ruchow = plansza.historia_ruchow
                 if gra_treningowa:
                     if pos[0]<=850 and pos[0]>=700 and pos[1]<=723 and pos[1]>=670:
                         plansza.cofnij_ruch()
@@ -334,13 +409,13 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                         czy_wykonano_ruch = True
                         czy_cofnieto = True
 
-                    if pos[0]<=1015 and pos[0]>=865 and pos[1]<=741 and pos[1]>=708:
+                if pos[0]<=1015 and pos[0]>=865 and pos[1]<=741 and pos[1]>=708:
+                    if len(plansza.historia_ruchow) == 0:
                         odczytane_ruchy = zapis_odczyt.odczytaj_dane()
-                        zapis_odczyt.konwertuj_odczytane_dane(odczytane_ruchy)
+                        zapis_odczyt.konwertuj_odczytane_dane(odczytane_ruchy, plansza)
+                        czy_wykonano_ruch = True
+                        czy_odczytano = True
 
-                elif len(plansza.historia_ruchow) == 0:
-                    if pos[0]<=1015 and pos[0]>=865 and pos[1]<=741 and pos[1]>=708:
-                        print(zapis_odczyt.odczytaj_dane())
 
                 if pos[0]<=1015 and pos[0]>=865 and pos[1]<=698 and pos[1]>=665:
                     zapis_odczyt.zapisz_dane()
@@ -348,15 +423,24 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
 
 
                 if pos[0]<=1180 and pos[0]>=1030 and pos[1]<=723 and pos[1]>=670:
+                    stop_event.set()
+                    time.sleep(1)
                     wyjdz_do_menu(root)
 
 
-        plansza.wyswietl_figury(ekran)
 
 
         if czy_wykonano_ruch:
             wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
-            timerB_aktywny = not timerB_aktywny
+            if event_timer.is_set():
+                event_timer.clear()
+            else:
+                event_timer.set()
+
+            if not czy_odczytano:
+                timerB_aktywny = not timerB_aktywny
+            czy_odczytano = False
+
             if not czy_cofnieto:
                 plansza.promocja()
             poprawne_ruchy = plansza.aktualizuj_ruchy()
@@ -369,43 +453,33 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                         podswietl_szacha(plansza.pozycja_krolaB, ekran)
                     plansza.wyswietl_figury(ekran)
                     p.display.flip()
-                    #print("mat - koniec gry")
+                    stop_event.set()
+                    time.sleep(0.51)
                     koniec_gry_mat(root, kolor)
             if plansza.pat:
                     plansza.wyswietl_plansze(ekran)
                     plansza.wyswietl_figury(ekran)
                     p.display.flip()
-                    #print("pat - koniec gry")
+                    stop_event.set()
+                    time.sleep(0.51)
                     koniec_gry_pat(root)
 
             czy_wykonano_ruch = False
 
-
-
-        zegar.tick(16)
         if not gra_treningowa:
-            sek += 62.5
-            if sek == 1000:
-                sek = 0
-                if timerB_aktywny:
-                    seconds = remaining_time_B % 60
-                    minutes = int(remaining_time_B / 60) % 60
-                    czas_pozostaly = f"{minutes:02}:{seconds:02}"
-                    timer_B_wyswietl(ekran, czas_pozostaly)
-                    remaining_time_B -= 1
-                else:
-                    seconds = remaining_time_C % 60
-                    minutes = int(remaining_time_C / 60) % 60
-                    czas_pozostaly = f"{minutes:02}:{seconds:02}"
-                    timer_C_wyswietl(ekran, czas_pozostaly)
-
-                    remaining_time_C -= 1
             if remaining_time_B == -1:
+                stop_event.set()
+                time.sleep(0.51)
                 koniec_gry_czas(root, 'Czarny')
             if remaining_time_C == -1:
+                stop_event.set()
+                time.sleep(0.51)
                 koniec_gry_czas(root, 'Bialy')
 
-        p.display.flip()
+        if not wyjscie:
+            plansza.wyswietl_figury(ekran)
+            zegar.tick(15)
+            p.display.flip()
 
 
 def gra_treningowa(root, remaining_time_B, remaining_time_C):
@@ -426,8 +500,6 @@ def gra_treningowa(root, remaining_time_B, remaining_time_C):
 
     gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, remaining_time_B, remaining_time_C, gra_treningowa)
 
-    p.quit()
-    root.destroy()
 
 def gra_pojedynek(root, remaining_time_B, remaining_time_C):
     root.withdraw()
@@ -447,8 +519,6 @@ def gra_pojedynek(root, remaining_time_B, remaining_time_C):
 
     gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, remaining_time_B, remaining_time_C, gra_treningowa)
 
-    p.quit()
-    root.destroy()
 
 def graj(root, backgroundimage):
     global remaining_time_B, remaining_time_C

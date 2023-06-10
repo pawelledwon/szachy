@@ -10,6 +10,16 @@ class Ruch:
         7: 'g',
         8: 'h'
     }
+    r_slownik = {
+        'a': 1,
+        'b': 2,
+        'c': 3,
+        'd': 4,
+        'e': 5,
+        'f': 6,
+        'g': 6,
+        'h': 7
+    }
 
     def __init__(self, start, cel, board, czy_roszada = False, czy_en_passant=False):
         from interfejs import Zdjecia
