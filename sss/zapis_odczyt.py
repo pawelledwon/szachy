@@ -23,7 +23,12 @@ class Zapis_i_odczyt:
         podzielone_ruchy = []
         zle_dane = False
         regex = r"([a-h][1-8])|([a-h]x[a-h][1-8])|([WSGHK][a-h][1-8])|([WSGHK]*x[a-h][1-8])|([WSGH][a-h][a-h][1-8])|([WSGH][a-h]*x[a-h][1-8])|([WSGH][1-8][a-h][1-8])|([WSGH][1-8]*x[a-h][1-8])|(0-0-0)|(0-0)"
-
+        if ',' not in ruchy:
+            from interfejs import zle_wprowadzone_dane
+            print('zle')
+            stop_event.set()
+            time.sleep(0.51)
+            zle_wprowadzone_dane(root)
 
         for i in range(len(ruchy)):
             if ruchy[i] != ',':
@@ -35,6 +40,7 @@ class Zapis_i_odczyt:
                     ruch = ''
                 else:
                     from interfejs import zle_wprowadzone_dane
+                    print('zle')
                     stop_event.set()
                     time.sleep(0.51)
                     zle_wprowadzone_dane(root)
