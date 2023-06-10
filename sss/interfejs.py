@@ -225,8 +225,15 @@ def wyswietl_historie_ruchow(ekran, historia_ruchow):
         else:
             dlugosc_slowa = 0
             linijka += 1
+            ekran.blit(p.font.SysFont('Arial', 20).render(historia_ruchow[i].notacja_uzytkownika + ',', True, (0,0,0)), (710 + dlugosc_slowa*12, 350 + linijka*20))
+            dlugosc_slowa += len(historia_ruchow[i].notacja_uzytkownika)
 
-
+def zle_wprowadzone_dane(root):
+    root.withdraw()
+    messagebox.showinfo("Błąd!", "Źle wprowadzono dane, Naciśnij OK aby wrocić do menu")
+    p.quit()
+    root.destroy()
+    main()
 def koniec_gry_mat(root, kolor):
     root.withdraw()
     messagebox.showinfo("Koniec gry!", "MAT!!! %s kolor wygrywa!!! \nNaciśnij OK aby wrocić do menu" % (kolor))
@@ -286,10 +293,8 @@ def odliczaj_czas_C(ekran):
             timer_C_wyswietl(ekran, czas_pozostaly)
             time.sleep(1)
         condition.release()
-
 def wyjdz_do_menu(root):
     root.withdraw()
-    p.quit()
     root.destroy()
     main()
 
@@ -313,8 +318,9 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
         t2.start()
 
     while(running):
-        plansza.wyswietl_plansze(ekran)
-        plansza.wyswietl_figury(ekran)
+        if not wyjscie:
+            plansza.wyswietl_plansze(ekran)
+            plansza.wyswietl_figury(ekran)
         if len(plansza.historia_ruchow) == 0:
             draw_button(ekran, p.Rect(865, 708, 150, 33), 'aliceblue', "Wczytaj grę", False)
         else:
@@ -412,7 +418,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                 if pos[0]<=1015 and pos[0]>=865 and pos[1]<=741 and pos[1]>=708:
                     if len(plansza.historia_ruchow) == 0:
                         odczytane_ruchy = zapis_odczyt.odczytaj_dane()
-                        zapis_odczyt.konwertuj_odczytane_dane(odczytane_ruchy, plansza)
+                        zapis_odczyt.konwertuj_odczytane_dane(odczytane_ruchy, plansza, root, stop_event)
                         czy_wykonano_ruch = True
                         czy_odczytano = True
 
@@ -423,8 +429,12 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
 
 
                 if pos[0]<=1180 and pos[0]>=1030 and pos[1]<=723 and pos[1]>=670:
+                    if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+                        plansza.wykonaj_ruch(poprawne_ruchy[0])
                     stop_event.set()
+                    ekran = p.display.set_mode((1200,768), flags=p.HIDDEN)
                     time.sleep(1)
+                    wyjscie = True
                     wyjdz_do_menu(root)
 
 
@@ -484,7 +494,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
 
 def gra_treningowa(root, remaining_time_B, remaining_time_C):
     root.withdraw()
-    ekran = p.display.set_mode((1200,768))
+    ekran = p.display.set_mode((1200,768), flags=p.SHOWN)
     p.display.set_caption('Szachy')
     zegar = p.time.Clock()
     ekran.fill(p.Color("lightblue"))

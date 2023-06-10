@@ -1,4 +1,6 @@
-from copy import *
+import re
+import time
+import pygame as p
 class Zapis_i_odczyt:
     def __init__(self, lista_ruchow):
         self.lista_ruchow = lista_ruchow
@@ -16,19 +18,29 @@ class Zapis_i_odczyt:
             lines = plik_wejsciowy.readlines()
             return lines[0]
 
-    def konwertuj_odczytane_dane(self, ruchy, plansza):
+    def konwertuj_odczytane_dane(self, ruchy, plansza, root, stop_event):
         ruch = ''
         podzielone_ruchy = []
+        zle_dane = False
+        regex = r"([a-h][1-8])|([a-h]x[a-h][1-8])|([WSGHK][a-h][1-8])|([WSGHK]*x[a-h][1-8])|([WSGH][a-h][a-h][1-8])|([WSGH][a-h]*x[a-h][1-8])|([WSGH][1-8][a-h][1-8])|([WSGH][1-8]*x[a-h][1-8])|(0-0-0)|(0-0)"
+
 
         for i in range(len(ruchy)):
             if ruchy[i] != ',':
                 ruch += ruchy[i]
             else:
-                podzielone_ruchy.append(ruch.strip())
-                ruch = ''
+                match = re.match(regex, ruch.strip())
+                if match:
+                    podzielone_ruchy.append(ruch.strip())
+                    ruch = ''
+                else:
+                    from interfejs import zle_wprowadzone_dane
+                    stop_event.set()
+                    time.sleep(0.51)
+                    zle_wprowadzone_dane(root)
 
         mozliwe_ruchy = plansza.aktualizuj_ruchy()
-        print(plansza.board)
+
         while len(podzielone_ruchy) > 0:
             for j in range(len(mozliwe_ruchy)):
                 if podzielone_ruchy[0] == mozliwe_ruchy[j].notacja_uzytkownika:
@@ -37,6 +49,9 @@ class Zapis_i_odczyt:
                     plansza.wykonaj_ruch(mozliwe_ruchy[j])
                     break
             mozliwe_ruchy = plansza.aktualizuj_ruchy()
+
+
+        #print('Zle wprowadzone dane')
 
 
 

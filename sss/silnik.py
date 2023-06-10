@@ -92,7 +92,6 @@ class Plansza:
 
         for ruch in range(len(ruchy) - 1, -1, -1):
             self.wykonaj_ruch(ruchy[ruch])
-            print(ruchy[ruch].notacja)
             if self.ruch_bialych:
                 self.ruch_bialych = False
             else:
