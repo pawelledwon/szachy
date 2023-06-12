@@ -118,6 +118,22 @@ def zaladuj_zdjecia():
             zdjecie_ze_zmienionym_rozmiarem = p.transform.scale(zdjecie,(65,70))
         Zdjecia[figura] = zdjecie_ze_zmienionym_rozmiarem
 
+def draw_button_RP(surface, rect, text, whitetomove):
+    font = p.font.SysFont(p.font.get_default_font(), 24)
+
+    if whitetomove:
+        background_color = (255, 255, 255)
+        text_color = (0, 0, 0)
+    else:
+        background_color = (0, 0, 0)
+        text_color = (255, 255, 255)
+
+    p.draw.rect(surface, background_color, rect, border_radius=5)
+    p.draw.rect(surface, (0, 0, 0), rect, 2, border_radius=5)
+    text_surf = font.render(text, True, text_color)
+    text_rect = text_surf.get_rect(center=rect.center)
+    surface.blit(text_surf, text_rect)
+
 def draw_button(surface, rect, color, text, czy_strzalka, czy_aktywny = True):
     font = p.font.SysFont(p.font.get_default_font(), 24)
     p.draw.rect(surface, color, rect, border_radius=5)
@@ -229,7 +245,7 @@ def wyswietl_historie_ruchow(ekran, historia_ruchow):
 
 def zle_wprowadzone_dane(root):
     root.withdraw()
-    messagebox.showinfo("Błąd!", "Źle wprowadzono dane, Naciśnij OK aby wrocić do menu")
+    messagebox.showinfo("Błąd!", "Źle wprowadzono dane. \nNaciśnij OK aby wrocić do menu")
     p.quit()
     root.destroy()
     main()
@@ -255,6 +271,25 @@ def koniec_gry_czas(root, kolor):
     root.destroy()
     main()
 
+def koniec_gry_poddanie(root, kolor):
+    root.withdraw()
+    messagebox.showinfo("Koniec gry!", "%s kolor poddaje partię!!! \nNaciśnij OK aby wrocić do menu" %(kolor))
+    p.quit()
+    root.destroy()
+    main()
+
+def propozycja_remisu(root, kolor, plansza, poprawne_ruchy):
+    msg_box = messagebox.askquestion('Remis?', '%s kolor proponuje remis. \nPrzyjmujesz?' %(kolor))
+    if msg_box == 'yes':
+        messagebox.showinfo("Koniec gry!", "Remis przez obupólną zgodę \nNaciśnij OK aby wrocić do menu")
+        stop_event.set()
+        if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+            plansza.wykonaj_ruch(poprawne_ruchy[0])
+        time.sleep(1.51)
+        p.quit()
+        wyjdz_do_menu(root)
+    else:
+        return
 def odliczaj_czas_B(ekran):
         global remaining_time_B, condition
         condition.acquire()
@@ -307,14 +342,14 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
     wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
 
     draw_button(ekran, p.Rect(865, 665, 150, 33), 'aliceblue', "Zapisz grę", False)
-    draw_button(ekran, p.Rect(870, 305, 150, 33), 'aliceblue', "Zaproponuj remis", False)
-    draw_button(ekran, p.Rect(1035, 305, 150, 33), 'aliceblue', "Poddaj się", False)
     draw_button(ekran, p.Rect(1030, 675, 150, 53), 'aliceblue', "Wyjdź do menu", False)
     zapis_odczyt = Zapis_i_odczyt(plansza.historia_ruchow)
     if not gra_treningowa:
         t1.start()
-        time.sleep(0.25)
+        time.sleep(0.1)
         t2.start()
+        draw_button_RP(ekran, p.Rect(870, 305, 150, 33), "Zaproponuj remis", plansza.ruch_bialych)
+        draw_button_RP(ekran, p.Rect(1035, 305, 150, 33), "Poddaj się", plansza.ruch_bialych)
 
     while(running):
         if not wyjscie:
@@ -340,9 +375,6 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
         if len(klikniecia_gracza) == 1:
             podswietl_pole(klikniecia_gracza, ekran)
             podswietl_ruchy(klikniecia_gracza, ekran, poprawne_ruchy)
-
-        #plansza.promocja()
-
 
 
         if plansza.czy_szach(kolor):
@@ -395,6 +427,14 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                         plansza.wyswietl_figury(ekran)
                         czy_wykonano_ruch = True
                         czy_cofnieto = True
+                else:
+                    if pos[0]<=1185 and pos[0]>=1035 and pos[1]<=455 and pos[1]>=305:
+                        stop_event.set()
+                        time.sleep(0.51)
+                        koniec_gry_poddanie(root, kolor)
+
+                    if pos[0]<=1020 and pos[0]>=870 and pos[1]<=455 and pos[1]>=305:
+                        propozycja_remisu(root, kolor, plansza, poprawne_ruchy)
 
                 if pos[0]<=1015 and pos[0]>=865 and pos[1]<=741 and pos[1]>=708:
                     if len(plansza.historia_ruchow) == 0:
@@ -449,7 +489,6 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                                    #print(plansza.historia_ruchow[-1].przesuwana_figura.nazwa)
                                    p.draw.rect(ekran, "lightblue", p.Rect(695, 15, 345, 90))
             poprawne_ruchy = plansza.aktualizuj_ruchy()
-
             wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
             if event_timer.is_set():
                 event_timer.clear()
@@ -483,6 +522,8 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
             czy_wykonano_ruch = False
 
         if not gra_treningowa:
+            draw_button_RP(ekran, p.Rect(870, 305, 150, 33), "Zaproponuj remis", plansza.ruch_bialych)
+            draw_button_RP(ekran, p.Rect(1035, 305, 150, 33), "Poddaj się", plansza.ruch_bialych)
             if remaining_time_B == -1:
                 stop_event.set()
                 time.sleep(0.51)

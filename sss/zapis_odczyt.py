@@ -46,37 +46,37 @@ class Zapis_i_odczyt:
                     zle_wprowadzone_dane(root)
 
         mozliwe_ruchy = plansza.aktualizuj_ruchy()
-
+        from hetman import Hetman
+        from wieza import Wieza
+        from skoczek import Skoczek
+        from goniec import Goniec
         while len(podzielone_ruchy) > 0:
             for j in range(len(mozliwe_ruchy)):
-
+                print(podzielone_ruchy)
+                print(mozliwe_ruchy[j].notacja_uzytkownika)
                 if podzielone_ruchy[0] == mozliwe_ruchy[j].notacja_uzytkownika:
                     podzielone_ruchy.pop(0)
-                    if mozliwe_ruchy[j].czy_promocja:
-                        from hetman import Hetman
-                        from wieza import Wieza
-                        from skoczek import Skoczek
-                        from goniec import Goniec
-                        pionek = mozliwe_ruchy[j]
+                    plansza.wykonaj_ruch(mozliwe_ruchy[j])
+                    break
+                elif podzielone_ruchy[0][-1] == 'H' or podzielone_ruchy[0][-1] == 'W' or podzielone_ruchy[0][-1] == 'S' or podzielone_ruchy[0][-1] == 'G':
+                    if podzielone_ruchy[0].find(mozliwe_ruchy[j].notacja_uzytkownika) != -1:
+                        pionek = mozliwe_ruchy[j].przesuwana_figura
                         if plansza.ruch_bialych:
                             kolor = "Bialy"
                         else:
                             kolor = "Czarny"
-                        if pionek.notacja_uzytkownika[-1] == 'H':
+                        plansza.wykonaj_ruch(mozliwe_ruchy[j])
+
+                        if podzielone_ruchy[0][-1] == 'H':
                             plansza.board[pionek.rzad][pionek.kolumna] = Hetman(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Hetman"])
-                        elif pionek.notacja_uzytkownika[-1] == 'W':
+                        elif podzielone_ruchy[0][-1] == 'W':
                             plansza.board[pionek.rzad][pionek.kolumna] = Wieza(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Wieza"])
-                        elif pionek.notacja_uzytkownika[-1] == 'G':
+                        elif podzielone_ruchy[0][-1] == 'G':
                             plansza.board[pionek.rzad][pionek.kolumna] = Goniec(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Goniec"])
-                        elif pionek.notacja_uzytkownika[-1] == 'W':
+                        elif podzielone_ruchy[0][-1] == 'W':
                             plansza.board[pionek.rzad][pionek.kolumna] = Skoczek(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Skoczek"])
-
-
-                    plansza.wykonaj_ruch(mozliwe_ruchy[j])
-                    break
-                elif podzielone_ruchy[0][-1] == 'H' or podzielone_ruchy[0][-1] == 'W' or podzielone_ruchy[0][-1] == 'S' or podzielone_ruchy[0][-1] == 'G':
-                    podzielone_ruchy[0] = ''
-
+                        podzielone_ruchy.pop(0)
+                        break
 
             mozliwe_ruchy = plansza.aktualizuj_ruchy()
 
