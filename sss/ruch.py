@@ -21,7 +21,7 @@ class Ruch:
         'h': 7
     }
 
-    def __init__(self, start, cel, board, czy_roszada = False, czy_en_passant=False):
+    def __init__(self, start, cel, board, czy_roszada = False, czy_en_passant=False, czy_promocja = False):
         from interfejs import Zdjecia
         from pionek import Pionek
         self.start_x = start[1]
@@ -31,12 +31,15 @@ class Ruch:
         self.przesuwana_figura = board[self.start_x][self.start_y]
         self.przechwytywana_figura = board[self.cel_x][self.cel_y]
         self.notacja = str(self.start_x)+str(self.start_y)+str(self.cel_x)+str(self.cel_y)
+        self.czy_promocja = czy_promocja
         if self.przesuwana_figura is None:
             return
 
         if self.przechwytywana_figura is None:
             if self.przesuwana_figura.nazwa == 'Pionek':
                 self.notacja_uzytkownika = str(self.slownik[self.cel_y + 1]) + str(8 - self.cel_x)
+                if self.czy_promocja:
+                    self.notacja_uzytkownika = str(self.slownik[self.cel_y + 1]) + str(8 - self.cel_x)
             else:
                 self.notacja_uzytkownika = self.przesuwana_figura.nazwa[0] + str(self.slownik[self.cel_y + 1]) + str(8 - self.cel_x)
         else:
@@ -59,11 +62,6 @@ class Ruch:
                 self.notacja_uzytkownika = '0-0'
             elif self.cel_y - self.start_y == -2:
                 self.notacja_uzytkownika = '0-0-0'
-
-
-
-
-
 
     def __eq__(self, other):
         return self.notacja == other.notacja

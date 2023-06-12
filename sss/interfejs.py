@@ -19,11 +19,12 @@ event_timer = threading.Event()
 
 
 def main():
-    global remaining_time_B, remaining_time_C
+    global remaining_time_B, remaining_time_C, event_timer
     time.sleep(1)
     remaining_time_B = 600
     remaining_time_C = 600
     stop_event.clear()
+    event_timer.clear()
     p.init()
     root = tkinter.Tk()         #tworzy okienko
     root.geometry('480x480')  #ustawia rozmiar
@@ -38,8 +39,6 @@ def main():
     background.pack()
 
     root.protocol("WM_DELETE_WINDOW", przyciskwyjscia)
-
-
 
     b_graj = tkinter.Button(root, text='GRAJ',command =lambda: graj(root, backgroundimage),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
     b_graj.place (x = 30, y= 180)
@@ -258,7 +257,6 @@ def koniec_gry_czas(root, kolor):
 
 def odliczaj_czas_B(ekran):
         global remaining_time_B, condition
-
         condition.acquire()
         while remaining_time_B >= 0:
             if stop_event.is_set():
@@ -309,7 +307,8 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
     wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
 
     draw_button(ekran, p.Rect(865, 665, 150, 33), 'aliceblue', "Zapisz grę", False)
-
+    draw_button(ekran, p.Rect(870, 305, 150, 33), 'aliceblue', "Zaproponuj remis", False)
+    draw_button(ekran, p.Rect(1035, 305, 150, 33), 'aliceblue', "Poddaj się", False)
     draw_button(ekran, p.Rect(1030, 675, 150, 53), 'aliceblue', "Wyjdź do menu", False)
     zapis_odczyt = Zapis_i_odczyt(plansza.historia_ruchow)
     if not gra_treningowa:
@@ -343,25 +342,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
             podswietl_ruchy(klikniecia_gracza, ekran, poprawne_ruchy)
 
         #plansza.promocja()
-        if plansza.promocja_pionka and not czy_cofnieto:
-            wybor_przy_promocji(ekran, kolor)
-            while(plansza.promocja_pionka):
-                for event in p.event.get():
-                    if event.type == p.QUIT:
-                        running = False
-                        plansza.promocja_pionka = False
-                        plansza.historia_ruchow[-1].przesuwana_figura.promocja = False
-                        p.quit()
-                        root.destroy()
-                    elif event.type == p.MOUSEBUTTONDOWN:
-                        pos = p.mouse.get_pos()
-                        if pos[0]<=1035 and pos[0]>=700 and pos[1]<=100 and pos[1]>=20:
-                           plansza.promuj_pionka(pos)
-                           plansza.promocja_pionka = False
-                           plansza.historia_ruchow[-1].przesuwana_figura.promocja = False
-                           #print(plansza.historia_ruchow[-1].przesuwana_figura.nazwa)
-                           poprawne_ruchy = plansza.aktualizuj_ruchy()
-                           p.draw.rect(ekran, "lightblue", p.Rect(695, 15, 345, 90))
+
 
 
         if plansza.czy_szach(kolor):
@@ -441,6 +422,34 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
 
 
         if czy_wykonano_ruch:
+            if not czy_cofnieto:
+                if plansza.ruch_bialych:
+                    kolor = 'Bialy'
+                else:
+                    kolor = 'Czarny'
+                plansza.promocja()
+                if plansza.promocja_pionka:
+                    wybor_przy_promocji(ekran, kolor)
+                    plansza.wyswietl_figury(ekran)
+                    p.display.flip()
+                    while(plansza.promocja_pionka):
+                        for event in p.event.get():
+                            if event.type == p.QUIT:
+                                running = False
+                                plansza.promocja_pionka = False
+                                plansza.historia_ruchow[-1].przesuwana_figura.promocja = False
+                                p.quit()
+                                root.destroy()
+                            elif event.type == p.MOUSEBUTTONDOWN:
+                                pos = p.mouse.get_pos()
+                                if pos[0]<=1035 and pos[0]>=700 and pos[1]<=100 and pos[1]>=20:
+                                   plansza.promuj_pionka(pos)
+                                   plansza.promocja_pionka = False
+                                   plansza.historia_ruchow[-1].przesuwana_figura.promocja = False
+                                   #print(plansza.historia_ruchow[-1].przesuwana_figura.nazwa)
+                                   p.draw.rect(ekran, "lightblue", p.Rect(695, 15, 345, 90))
+            poprawne_ruchy = plansza.aktualizuj_ruchy()
+
             wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
             if event_timer.is_set():
                 event_timer.clear()
@@ -451,9 +460,6 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                 timerB_aktywny = not timerB_aktywny
             czy_odczytano = False
 
-            if not czy_cofnieto:
-                plansza.promocja()
-            poprawne_ruchy = plansza.aktualizuj_ruchy()
 
             if plansza.szachmat:
                     plansza.wyswietl_plansze(ekran)
