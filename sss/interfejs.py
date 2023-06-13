@@ -285,7 +285,7 @@ def propozycja_remisu(root, kolor, plansza, poprawne_ruchy):
         stop_event.set()
         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
             plansza.wykonaj_ruch(poprawne_ruchy[0])
-        time.sleep(1.51)
+        time.sleep(2)
         p.quit()
         wyjdz_do_menu(root)
     else:
@@ -293,6 +293,8 @@ def propozycja_remisu(root, kolor, plansza, poprawne_ruchy):
 def odliczaj_czas_B(ekran):
         global remaining_time_B, condition
         condition.acquire()
+        start_time = time.time()
+        roznica = 0
         while remaining_time_B >= 0:
             if stop_event.is_set():
                 break
@@ -304,8 +306,12 @@ def odliczaj_czas_B(ekran):
                 condition.release()
                 time.sleep(1)
                 condition.acquire()
-            time.sleep(1)
-            timer_B_wyswietl(ekran, czas_pozostaly)
+            roznica += time.time() - start_time
+            if roznica >= 1000000000:
+                timer_B_wyswietl(ekran, czas_pozostaly)
+                roznica = 0
+                start_time = time.time()
+
         condition.release()
 
 def odliczaj_czas_C(ekran):
@@ -333,7 +339,8 @@ def wyjdz_do_menu(root):
 
 
 
-def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, remaining_time_B, remaining_time_C, gra_treningowa):
+def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, gra_treningowa):
+    global remaining_time_B, remaining_time_C
     timerB_aktywny = True
     czy_odczytano = False
     wyjscie = False
@@ -439,13 +446,19 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                 if pos[0]<=1015 and pos[0]>=865 and pos[1]<=741 and pos[1]>=708:
                     if len(plansza.historia_ruchow) == 0:
                         odczytane_ruchy = zapis_odczyt.odczytaj_dane()
-                        zapis_odczyt.konwertuj_odczytane_dane(odczytane_ruchy, plansza, root, stop_event)
+                        remaining_time_B, remaining_time_C = zapis_odczyt.konwertuj_odczytane_dane(odczytane_ruchy[0], plansza, root, stop_event, odczytane_ruchy[1])
+
+                        if len(plansza.historia_ruchow) % 2 == 0:
+                            if event_timer.is_set():
+                                event_timer.clear()
+                            else:
+                                event_timer.set()
                         czy_wykonano_ruch = True
                         czy_odczytano = True
 
 
                 if pos[0]<=1015 and pos[0]>=865 and pos[1]<=698 and pos[1]>=665:
-                    zapis_odczyt.zapisz_dane()
+                    zapis_odczyt.zapisz_dane(remaining_time_B, remaining_time_C)
                     print('zapisano dane')
 
 
@@ -539,7 +552,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
             p.display.flip()
 
 
-def gra_treningowa(root, remaining_time_B, remaining_time_C):
+def gra_treningowa(root):
     root.withdraw()
     ekran = p.display.set_mode((1200,768), flags=p.SHOWN)
     p.display.set_caption('Szachy')
@@ -555,10 +568,10 @@ def gra_treningowa(root, remaining_time_B, remaining_time_C):
     czy_cofnieto = False
     gra_treningowa = True
 
-    gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, remaining_time_B, remaining_time_C, gra_treningowa)
+    gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, gra_treningowa)
 
 
-def gra_pojedynek(root, remaining_time_B, remaining_time_C):
+def gra_pojedynek(root):
     root.withdraw()
     ekran = p.display.set_mode((1200,768))
     p.display.set_caption('Szachy')
@@ -574,17 +587,16 @@ def gra_pojedynek(root, remaining_time_B, remaining_time_C):
     czy_cofnieto = False
     gra_treningowa = False
 
-    gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, remaining_time_B, remaining_time_C, gra_treningowa)
+    gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, gra_treningowa)
 
 
 def graj(root, backgroundimage):
-    global remaining_time_B, remaining_time_C
     wybor_opcji(root, backgroundimage)
 
-    b_gra_treningowa = tkinter.Button(root, text='GRAJ TRENING',command =lambda: gra_treningowa(root, remaining_time_B, remaining_time_C),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
+    b_gra_treningowa = tkinter.Button(root, text='GRAJ TRENING',command =lambda: gra_treningowa(root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
     b_gra_treningowa.place(x=30, y=180)
 
-    b_gra_pojedynek = tkinter.Button(root, text='GRAJ POJEDYNEK',command =lambda: gra_pojedynek(root, remaining_time_B, remaining_time_C),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
+    b_gra_pojedynek = tkinter.Button(root, text='GRAJ POJEDYNEK',command =lambda: gra_pojedynek(root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
     b_gra_pojedynek.place(x=30, y=240)
 
     root.mainloop()
