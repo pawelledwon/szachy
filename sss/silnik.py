@@ -55,9 +55,9 @@ class Plansza:
         for i in range(8):
             for j in range(8):
                 if( (i+j) % 2 ==0):
-                    p.draw.rect(ekran, "white", p.Rect(i*80+30, j*80+60, 80, 80))
+                    p.draw.rect(ekran, "sandybrown", p.Rect(i*80+30, j*80+60, 80, 80))           #white
                 else:
-                    p.draw.rect(ekran, "dark grey", p.Rect(i*80+30, j*80+60, 80, 80))
+                    p.draw.rect(ekran, "saddlebrown", p.Rect(i*80+30, j*80+60, 80, 80))           #dark grey, forest green
 
     def wyswietl_figury(self, ekran):
 

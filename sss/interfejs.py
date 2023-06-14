@@ -49,11 +49,18 @@ def main():
     b_graj_o = tkinter.Button(root, text='GRAJ ONLINE',command =lambda: graj(root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
     b_graj_o.place (x = 30, y= 250)
 
-    b_wyjdz=tkinter.Button(root, text='ZMIEN KOLOR PLANSZY', command = lambda:przyciskwyjscia, bg = 'chocolate',font = 'arial', fg = 'white', width = 20)
+    b_wyjdz=tkinter.Button(root, text='ZMIEN KOLOR PLANSZY', command=lambda: wybierz_kolor_planszy(root, backgroundimage), bg = 'chocolate',font = 'arial', fg = 'white', width = 20)
     b_wyjdz.place(x=30, y=320)
 
 
     root.mainloop() #okienko czeka na dalsze dzialanie
+
+def wybierz_kolor_planszy(root, backgroundimage):
+    for widget in root.winfo_children():
+        widget.destroy()
+    background_label = tkinter.Label(root, image=backgroundimage)
+    background_label.place(x=0, y=0, relwidth=1, relheight=1)
+
 
 def przyciskwyjscia():
     p.quit()
@@ -293,7 +300,7 @@ def propozycja_remisu(root, kolor, plansza, poprawne_ruchy):
 def odliczaj_czas_B(ekran):
         global remaining_time_B, condition
         condition.acquire()
-        start_time = time.time()
+        start_time = time.localtime(time.time()).tm_sec/100
         roznica = 0
         while remaining_time_B >= 0:
             if stop_event.is_set():
@@ -304,19 +311,23 @@ def odliczaj_czas_B(ekran):
             remaining_time_B -= 1
             if event_timer.is_set():
                 condition.release()
-                time.sleep(1)
+                time.sleep(0.25)
                 condition.acquire()
-            roznica += time.time() - start_time
-            if roznica >= 1000000000:
-                timer_B_wyswietl(ekran, czas_pozostaly)
-                roznica = 0
-                start_time = time.time()
-
+            timer_B_wyswietl(ekran, czas_pozostaly)
+            while roznica < 100:
+                roznica += time.localtime(time.time()).tm_sec*0.01 - start_time
+                if roznica < 0:
+                    start_time = time.localtime(time.time()).tm_sec*0.01
+                    roznica = 0
+            start_time = time.localtime(time.time()).tm_sec/100
+            roznica = 0
         condition.release()
 
 def odliczaj_czas_C(ekran):
         global remaining_time_C, condition
         condition.acquire()
+        start_time = time.localtime(time.time()).tm_sec*0.01
+        roznica = 0
         while remaining_time_C >= 0:
             if stop_event.is_set():
                 break
@@ -324,13 +335,18 @@ def odliczaj_czas_C(ekran):
             minutes = int(remaining_time_C / 60) % 60
             czas_pozostaly = f"{minutes:02}:{seconds:02}"
             remaining_time_C -= 1
-            if not event_timer.is_set():
-                remaining_time_C -= 1
-                condition.release()
-                time.sleep(1)
-                condition.acquire()
             timer_C_wyswietl(ekran, czas_pozostaly)
-            time.sleep(1)
+            if not event_timer.is_set():
+                condition.release()
+                time.sleep(0.25)
+                condition.acquire()
+            while roznica < 100:
+                roznica += time.localtime(time.time()).tm_sec*0.01 - start_time
+                if roznica < 0:
+                    start_time = time.localtime(time.time()).tm_sec*0.01
+                    roznica = 0
+            start_time = time.localtime(time.time()).tm_sec*0.01
+            roznica = 0
         condition.release()
 def wyjdz_do_menu(root):
     root.withdraw()
