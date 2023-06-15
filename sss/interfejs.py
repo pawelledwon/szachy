@@ -9,6 +9,8 @@ from tkinter import messagebox
 import threading
 import time
 
+kolor_planszy = 1
+
 Zdjecia = {}
 remaining_time_B = 600
 remaining_time_C = 600
@@ -18,18 +20,20 @@ stop_event = threading.Event()
 event_timer = threading.Event()
 
 
-def main():
+def main(first_launch=True, root=tkinter.Tk()):
     global remaining_time_B, remaining_time_C, event_timer
-    time.sleep(1)
     remaining_time_B = 600
     remaining_time_C = 600
     stop_event.clear()
     event_timer.clear()
-    p.init()
-    root = tkinter.Tk()         #tworzy okienko
-    root.geometry('480x480')  #ustawia rozmiar
-    root.resizable(width=False, height=False)
-    root.title('Szachy')
+    if first_launch:        #tworzy okienko
+        p.init()
+        root.geometry('480x480')  #ustawia rozmiar
+        root.resizable(width=False, height=False)
+        root.title('Szachy')
+    else:
+        for widget in root.winfo_children():
+            widget.destroy()
     nazwa = tkinter.PhotoImage(file = "text.gif")
     nazwaa = tkinter.Label(root, i=nazwa)
     nazwaa.pack(side='top')
@@ -61,10 +65,41 @@ def wybierz_kolor_planszy(root, backgroundimage):
     background_label = tkinter.Label(root, image=backgroundimage)
     background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
+    plansza_bialo_szara_zdj = tkinter.PhotoImage(file = "plansza-bialo-szary.png")
+    plansza_bialo_zielona_zdj = tkinter.PhotoImage(file = "plansza-zielono-szary.png")
+    plansza_bezowo_brazowa_zdj = tkinter.PhotoImage(file = "plansza-brazowo-bezowy.png")
+
+
+    plansza_bialo_szara = tkinter.Label(root, image=plansza_bialo_szara_zdj, background='chocolate')
+    plansza_bialo_szara.place(x=220, y=100)
+
+    plansza_bialo_zielona = tkinter.Label(root, image=plansza_bialo_zielona_zdj, background='chocolate')
+    plansza_bialo_zielona.place(x=220, y=200)
+
+    plansza_bezowo_brazowa = tkinter.Label(root, image=plansza_bezowo_brazowa_zdj, background='chocolate')
+    plansza_bezowo_brazowa.place(x=220, y=300)
+
+    b_plansza_bialo_szara = tkinter.Button(root, text='WYBIERZ -->',command =lambda: wybranie_numeru_planszy(1),bg ='chocolate',font = 'arial',fg = 'white',width = 15 )
+    b_plansza_bialo_szara.place (x = 20, y= 100)
+
+    b_plansza_bialo_zielona = tkinter.Button(root, text='WYBIERZ -->',command =lambda: wybranie_numeru_planszy(2),bg ='chocolate',font = 'arial',fg = 'white',width = 15 )
+    b_plansza_bialo_zielona.place (x = 20, y= 200)
+
+    b_plansza_bezowo_brazowa = tkinter.Button(root, text='WYBIERZ -->',command =lambda: wybranie_numeru_planszy(3),bg ='chocolate',font = 'arial',fg = 'white',width = 15 )
+    b_plansza_bezowo_brazowa.place (x = 20, y= 300)
+
+    b_wroc = tkinter.Button(root, text='POWRÓT',command= lambda: main(False, root),bg ='chocolate',font = 'arial',fg = 'white',width = 15 )
+    b_wroc.place (x = 300, y= 400)
+
+    root.mainloop()
 
 def przyciskwyjscia():
     p.quit()
     exit()
+
+def wybranie_numeru_planszy(nr_planszy):
+    global kolor_planszy
+    kolor_planszy = nr_planszy
 
 def wybor_opcji(root, backgroundimage):
     for widget in root.winfo_children():
@@ -251,39 +286,34 @@ def wyswietl_historie_ruchow(ekran, historia_ruchow):
             dlugosc_slowa += len(historia_ruchow[i].notacja_uzytkownika)
 
 def zle_wprowadzone_dane(root):
-    root.withdraw()
     messagebox.showinfo("Błąd!", "Źle wprowadzono dane. \nNaciśnij OK aby wrocić do menu")
     p.quit()
-    root.destroy()
-    main()
+    root.deiconify()
+    main(False, root)
 def koniec_gry_mat(root, kolor):
-    root.withdraw()
     messagebox.showinfo("Koniec gry!", "MAT!!! %s kolor wygrywa!!! \nNaciśnij OK aby wrocić do menu" % (kolor))
     p.quit()
-    root.destroy()
-    main()
+    root.deiconify()
+    main(False, root)
 
 
 def koniec_gry_pat(root):
-    root.withdraw()
     messagebox.showinfo("Koniec gry!", "PAT!!! Naciśnij OK aby wrocić do menu")
     p.quit()
-    root.destroy()
-    main()
+    root.deiconify()
+    main(False, root)
 
 def koniec_gry_czas(root, kolor):
-    root.withdraw()
     messagebox.showinfo("Koniec gry!", "Brak czasu!!! %s kolor wygrywa!!! \nNaciśnij OK aby wrocić do menu" % (kolor))
     p.quit()
-    root.destroy()
-    main()
+    root.deiconify()
+    main(False, root)
 
 def koniec_gry_poddanie(root, kolor):
-    root.withdraw()
     messagebox.showinfo("Koniec gry!", "%s kolor poddaje partię!!! \nNaciśnij OK aby wrocić do menu" %(kolor))
     p.quit()
-    root.destroy()
-    main()
+    root.deiconify()
+    main(False, root)
 
 def propozycja_remisu(root, kolor, plansza, poprawne_ruchy):
     msg_box = messagebox.askquestion('Remis?', '%s kolor proponuje remis. \nPrzyjmujesz?' %(kolor))
@@ -314,8 +344,9 @@ def odliczaj_czas_B(ekran):
                 time.sleep(0.25)
                 condition.acquire()
             timer_B_wyswietl(ekran, czas_pozostaly)
-            while roznica < 100:
+            while roznica < 1.0:
                 roznica += time.localtime(time.time()).tm_sec*0.01 - start_time
+                time.sleep(0.001)
                 if roznica < 0:
                     start_time = time.localtime(time.time()).tm_sec*0.01
                     roznica = 0
@@ -340,8 +371,9 @@ def odliczaj_czas_C(ekran):
                 condition.release()
                 time.sleep(0.25)
                 condition.acquire()
-            while roznica < 100:
+            while roznica < 1.0:
                 roznica += time.localtime(time.time()).tm_sec*0.01 - start_time
+                time.sleep(0.001)
                 if roznica < 0:
                     start_time = time.localtime(time.time()).tm_sec*0.01
                     roznica = 0
@@ -349,14 +381,13 @@ def odliczaj_czas_C(ekran):
             roznica = 0
         condition.release()
 def wyjdz_do_menu(root):
-    root.withdraw()
-    root.destroy()
-    main()
+    root.deiconify()
+    main(False, root)
 
 
 
 def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, gra_treningowa):
-    global remaining_time_B, remaining_time_C
+    global remaining_time_B, remaining_time_C, kolor_planszy
     timerB_aktywny = True
     czy_odczytano = False
     wyjscie = False
@@ -376,7 +407,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
 
     while(running):
         if not wyjscie:
-            plansza.wyswietl_plansze(ekran)
+            plansza.wyswietl_plansze(ekran, kolor_planszy)
             plansza.wyswietl_figury(ekran)
         if len(plansza.historia_ruchow) == 0:
             draw_button(ekran, p.Rect(865, 708, 150, 33), 'aliceblue', "Wczytaj grę", False)
@@ -530,7 +561,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
 
 
             if plansza.szachmat:
-                    plansza.wyswietl_plansze(ekran)
+                    plansza.wyswietl_plansze(ekran, kolor_planszy)
                     if kolor == 'Bialy':
                         podswietl_szacha(plansza.pozycja_krolaC, ekran)      #na odwrot krolaC i krolaB bo wykonano ruch i zamieniono kolejnosc
                     else:
@@ -541,7 +572,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                     time.sleep(0.51)
                     koniec_gry_mat(root, kolor)
             if plansza.pat:
-                    plansza.wyswietl_plansze(ekran)
+                    plansza.wyswietl_plansze(ekran, kolor_planszy)
                     plansza.wyswietl_figury(ekran)
                     p.display.flip()
                     stop_event.set()

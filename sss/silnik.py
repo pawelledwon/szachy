@@ -34,7 +34,7 @@ class Plansza:
         self.czy_aktualnie_roszada = ZasadyRoszady(True, True, True, True)
         self.historia_roszad = [ZasadyRoszady(self.czy_aktualnie_roszada.cH, self.czy_aktualnie_roszada.cK, self.czy_aktualnie_roszada.bH, self.czy_aktualnie_roszada.bK)]
 
-    def wyswietl_plansze(self, ekran):
+    def wyswietl_plansze(self, ekran, kolor_planszy):
         p.draw.rect(ekran, "black", p.Rect(25, 55, 650, 650))
         font = p.font.Font('freesansbold.ttf', 24)
 
@@ -51,13 +51,22 @@ class Plansza:
             notacja_ah = font.render(znak, True, (0, 0, 0))
             ekran.blit(notacja_ah, (60+i, 705))
             i+=80
+        if kolor_planszy == 1:
+            kolor1 = "white"
+            kolor2 = "dark grey"
+        elif kolor_planszy == 2:
+            kolor1 = "white"
+            kolor2 = "forest green"
+        else:
+            kolor1 = "sandybrown"
+            kolor2 = "saddlebrown"
 
         for i in range(8):
             for j in range(8):
                 if( (i+j) % 2 ==0):
-                    p.draw.rect(ekran, "sandybrown", p.Rect(i*80+30, j*80+60, 80, 80))           #white
+                    p.draw.rect(ekran, kolor1, p.Rect(i*80+30, j*80+60, 80, 80))           #white
                 else:
-                    p.draw.rect(ekran, "saddlebrown", p.Rect(i*80+30, j*80+60, 80, 80))           #dark grey, forest green
+                    p.draw.rect(ekran, kolor2, p.Rect(i*80+30, j*80+60, 80, 80))           #dark grey, forest green
 
     def wyswietl_figury(self, ekran):
 
