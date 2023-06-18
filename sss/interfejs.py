@@ -327,6 +327,17 @@ def propozycja_remisu(root, kolor, plansza, poprawne_ruchy):
         wyjdz_do_menu(root)
     else:
         return "N"
+
+def propozycja_remisu_online(kolor, plansza, poprawne_ruchy):
+    msg_box = messagebox.askquestion('Remis?', '%s kolor proponuje remis. \nPrzyjmujesz?' %(kolor))
+    if msg_box == 'yes':
+        messagebox.showinfo("Koniec gry!", "Remis przez obupólną zgodę \nNaciśnij OK aby wrocić do menu")
+        stop_event.set()
+        if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+            plansza.wykonaj_ruch(poprawne_ruchy[0])
+            return True
+    else:
+        return False
 def odliczaj_czas_B(ekran):
         global remaining_time_B, condition
         condition.acquire()
@@ -832,9 +843,13 @@ def gra_online(root, client, czy_host):
                     koniec_gry_poddanie(root, kolor)
 
                 if ruch_str == "remis":
-                    decyzja = propozycja_remisu(root, kolor, plansza, poprawne_ruchy)
-                    if decyzja != "N":
+                    decyzja = propozycja_remisu_online(kolor, plansza, poprawne_ruchy)
+                    if decyzja:
                         client.send("T".encode('utf-8'))
+                        messagebox.showinfo("Koniec gry!", "Zgoda na remis!!! \nNaciśnij OK aby wrocić do menu")
+                        wyjdz_do_menu(root)
+                    else:
+                        client.send("N".encode('utf-8'))
 
                 if ruch_str == "T":
                     stop_event.set()
