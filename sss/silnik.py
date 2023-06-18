@@ -1,3 +1,6 @@
+import socket
+import threading
+
 from pionek import *
 from wieza import *
 from skoczek import *
@@ -33,6 +36,8 @@ class Plansza:
         self.promocja_pionka = False
         self.czy_aktualnie_roszada = ZasadyRoszady(True, True, True, True)
         self.historia_roszad = [ZasadyRoszady(self.czy_aktualnie_roszada.cH, self.czy_aktualnie_roszada.cK, self.czy_aktualnie_roszada.bH, self.czy_aktualnie_roszada.bK)]
+        self.you = "B"
+        self.opponent = "C"
 
     def wyswietl_plansze(self, ekran, kolor_planszy):
         p.draw.rect(ekran, "black", p.Rect(25, 55, 650, 650))
@@ -339,6 +344,7 @@ class Plansza:
 
             self.sprawdz_czy_roszada_mozliwa(ruch)
             self.historia_roszad.append(ZasadyRoszady(self.czy_aktualnie_roszada.cH, self.czy_aktualnie_roszada.cK, self.czy_aktualnie_roszada.bH, self.czy_aktualnie_roszada.bK))
+
 
 
 

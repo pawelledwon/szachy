@@ -1,7 +1,7 @@
 import tkinter
 from tkinter import ttk
 from silnik import *
-import pygame as p
+from network import Network
 from  zapis_odczyt import *
 import sys
 
@@ -47,10 +47,10 @@ def main(first_launch=True, root=tkinter.Tk()):
     b_graj = tkinter.Button(root, text='GRAJ',command =lambda: graj(root, backgroundimage),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
     b_graj.place (x = 30, y= 180)
 
-    b_wyjdz=tkinter.Button(root, text='WYJDZ', command = przyciskwyjscia, bg = 'chocolate',font = 'arial', fg = 'white', width = 20)
+    b_wyjdz=tkinter.Button(root, text='WYJDZ', command = lambda: przyciskwyjscia(), bg = 'chocolate',font = 'arial', fg = 'white', width = 20)
     b_wyjdz.place(x=30, y=390)
 
-    b_graj_o = tkinter.Button(root, text='GRAJ ONLINE',command =lambda: graj(root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
+    b_graj_o = tkinter.Button(root, text='GRAJ ONLINE',command =lambda: gra_online_wybor(root,backgroundimage),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
     b_graj_o.place (x = 30, y= 250)
 
     b_wyjdz=tkinter.Button(root, text='ZMIEN KOLOR PLANSZY', command=lambda: wybierz_kolor_planszy(root, backgroundimage), bg = 'chocolate',font = 'arial', fg = 'white', width = 20)
@@ -94,7 +94,9 @@ def wybierz_kolor_planszy(root, backgroundimage):
     root.mainloop()
 
 def przyciskwyjscia():
-    p.quit()
+    global stop_event
+    stop_event.set()
+    time.sleep(0.5)
     exit()
 
 def wybranie_numeru_planszy(nr_planszy):
@@ -106,7 +108,6 @@ def wybor_opcji(root, backgroundimage):
         widget.destroy()
     background_label = tkinter.Label(root, image=backgroundimage)
     background_label.place(x=0, y=0, relwidth=1, relheight=1)
-
 
     def wybrany(event):
         global remaining_time_B, remaining_time_C
@@ -322,7 +323,7 @@ def propozycja_remisu(root, kolor, plansza, poprawne_ruchy):
         stop_event.set()
         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
             plansza.wykonaj_ruch(poprawne_ruchy[0])
-        time.sleep(2)
+        time.sleep(1)
         p.quit()
         wyjdz_do_menu(root)
     else:
@@ -350,10 +351,9 @@ def odliczaj_czas_B(ekran):
                 if roznica < 0:
                     start_time = time.localtime(time.time()).tm_sec*0.01
                     roznica = 0
-            start_time = time.localtime(time.time()).tm_sec/100
+            start_time = time.localtime(time.time()).tm_sec*0.01
             roznica = 0
         condition.release()
-
 def odliczaj_czas_C(ekran):
         global remaining_time_C, condition
         condition.acquire()
@@ -400,7 +400,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
     zapis_odczyt = Zapis_i_odczyt(plansza.historia_ruchow)
     if not gra_treningowa:
         t1.start()
-        time.sleep(0.1)
+        time.sleep(0.5)
         t2.start()
         draw_button_RP(ekran, p.Rect(870, 305, 150, 33), "Zaproponuj remis", plansza.ruch_bialych)
         draw_button_RP(ekran, p.Rect(1035, 305, 150, 33), "Poddaj się", plansza.ruch_bialych)
@@ -514,7 +514,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                         plansza.wykonaj_ruch(poprawne_ruchy[0])
                     stop_event.set()
                     ekran = p.display.set_mode((1200,768), flags=p.HIDDEN)
-                    time.sleep(1)
+                    time.sleep(0.25)
                     wyjscie = True
                     wyjdz_do_menu(root)
 
@@ -635,6 +635,213 @@ def gra_pojedynek(root):
     gra_treningowa = False
 
     gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, gra_treningowa)
+
+def odczytaj_pozycje(str):
+    str = str.split(",")
+    return int(str[0]), int(str[1])
+
+def zmien_w_stringa(tup):
+    return str(tup[0]) + "," + str(tup[1])
+
+def gra_online_wybor(root, backgroundimage):
+    for widget in root.winfo_children():
+        widget.destroy()
+    background_label = tkinter.Label(root, image=backgroundimage)
+    background_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+    b_host = tkinter.Button(root, text='HOSTUJ GRE',command =lambda:  host_game_online("localhost", 9999, root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
+    b_host.place(x=30, y=180)
+
+    b_connect = tkinter.Button(root, text='DOLACZ DO GRY',command =lambda: connect_to_game_online("localhost", 9999, root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
+    b_connect.place(x=30, y=240)
+
+    root.mainloop()
+
+
+
+def gra_online(root, client, czy_host):
+    root.withdraw()
+    ekran = p.display.set_mode((1200,768))
+    p.display.set_caption('Szachy')
+    zegar = p.time.Clock()
+    ekran.fill(p.Color("lightblue"))
+    zaladuj_zdjecia()
+    running = True
+    plansza = Plansza(Zdjecia)
+    wybrane_pole = ()
+    klikniecia_gracza = []
+    poprawne_ruchy = plansza.aktualizuj_ruchy()
+    czy_wykonano_ruch = False
+    czy_cofnieto = False
+    gra_treningowa = False
+    wyjscie = False
+
+    if czy_host:
+        plansza.you = "B"
+        plansza.opponent = "C"
+    else:
+        plansza.you = "C"
+        plansza.opponent = "B"
+
+    while(running):
+        if not wyjscie:
+            plansza.wyswietl_plansze(ekran, kolor_planszy)
+            plansza.wyswietl_figury(ekran)
+
+        if plansza.ruch_bialych:
+            kolor = 'Bialy'
+        else:
+            kolor = 'Czarny'
+
+        if len(plansza.historia_ruchow) != 0:
+            ostatni_ruch = plansza.historia_ruchow[-1]
+            podswietl_ostatni_ruch((ostatni_ruch.start_y, ostatni_ruch.start_x), (ostatni_ruch.cel_y, ostatni_ruch.cel_x), ekran)
+
+        if len(klikniecia_gracza) == 1:
+            podswietl_pole(klikniecia_gracza, ekran)
+            podswietl_ruchy(klikniecia_gracza, ekran, poprawne_ruchy)
+
+
+        if plansza.czy_szach(kolor):
+            if kolor == 'Bialy':
+                podswietl_szacha(plansza.pozycja_krolaB, ekran)
+            elif kolor == 'Czarny':
+                podswietl_szacha(plansza.pozycja_krolaC, ekran)
+
+
+        for event in p.event.get():
+            if event.type == p.QUIT:
+                stop_event.set()
+                time.sleep(1)
+                running = False
+                p.quit()
+                root.destroy()
+                wyjscie = True
+            elif event.type == p.MOUSEBUTTONDOWN:
+                pos = p.mouse.get_pos()
+                #print(pos)
+                if (plansza.you == "B" and plansza.ruch_bialych) or (plansza.you == "C" and not plansza.ruch_bialych):
+                    if pos[0]<=670 and pos[0]>=30 and pos[1]<=700 and pos[1]>=60:
+                        pole_x, pole_y = klikniecie(ekran, pos[0], pos[1])
+
+                        if wybrane_pole == (pole_x, pole_y):
+                            wybrane_pole = ()
+                            klikniecia_gracza = []
+                        else:
+                            wybrane_pole = (pole_x, pole_y)
+                            klikniecia_gracza.append(wybrane_pole)
+
+
+                        if len(klikniecia_gracza) == 2:
+                                ruch = Ruch(klikniecia_gracza[0], klikniecia_gracza[1], plansza.board)
+                                #print(ruch.notacja)
+                                for i in range(len(poprawne_ruchy)):
+                                    if ruch == poprawne_ruchy[i]:
+                                        plansza.wykonaj_ruch(poprawne_ruchy[i])
+                                        czy_wykonano_ruch = True
+                                        czy_cofnieto = False
+                                wybrane_pole = ()
+                                klikniecia_gracza = []
+        if czy_wykonano_ruch:
+            plansza.ruch_bialych = not plansza.ruch_bialych
+        if (plansza.you == "B" and plansza.ruch_bialych) or (plansza.you == "C" and not plansza.ruch_bialych):
+            print("wysylam dane")
+            if len(plansza.historia_ruchow) == 0:
+                client.send("-1".encode('utf-8'))
+            else:
+                client.send(plansza.historia_ruchow[-1].notacja.encode('utf-8'))
+        else:
+            notacja_ostatniego_ruchu = "-1"
+            if len(plansza.historia_ruchow) > 0:
+                notacja_ostatniego_ruchu = plansza.historia_ruchow[-1].notacja
+            data = client.recv(2048)
+            print("odbieram dane")
+            if not data:
+                client.close()
+                break
+            else:
+                ruch_str = data.decode('utf-8')
+                if ruch_str != notacja_ostatniego_ruchu:
+                    print(ruch_str)
+                    for ruch in poprawne_ruchy:
+                         if ruch.notacja == ruch_str:
+                            plansza.wykonaj_ruch(ruch)
+                            poprawne_ruchy = plansza.aktualizuj_ruchy()
+
+        if czy_wykonano_ruch:
+            plansza.ruch_bialych = not plansza.ruch_bialych
+
+        if czy_wykonano_ruch:
+            if not czy_cofnieto:
+                if plansza.ruch_bialych:
+                    kolor = 'Bialy'
+                else:
+                    kolor = 'Czarny'
+                plansza.promocja()
+                if plansza.promocja_pionka:
+                    wybor_przy_promocji(ekran, kolor)
+                    plansza.wyswietl_figury(ekran)
+                    p.display.flip()
+                    while(plansza.promocja_pionka):
+                        for event in p.event.get():
+                            if event.type == p.QUIT:
+                                running = False
+                                plansza.promocja_pionka = False
+                                plansza.historia_ruchow[-1].przesuwana_figura.promocja = False
+                                p.quit()
+                                root.destroy()
+                            elif event.type == p.MOUSEBUTTONDOWN:
+                                pos = p.mouse.get_pos()
+                                if pos[0]<=1035 and pos[0]>=700 and pos[1]<=100 and pos[1]>=20:
+                                   plansza.promuj_pionka(pos)
+                                   plansza.promocja_pionka = False
+                                   plansza.historia_ruchow[-1].przesuwana_figura.promocja = False
+                                   #print(plansza.historia_ruchow[-1].przesuwana_figura.nazwa)
+                                   p.draw.rect(ekran, "lightblue", p.Rect(695, 15, 345, 90))
+            poprawne_ruchy = plansza.aktualizuj_ruchy()
+            wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
+            if plansza.szachmat:
+                    plansza.wyswietl_plansze(ekran, kolor_planszy)
+                    if kolor == 'Bialy':
+                        podswietl_szacha(plansza.pozycja_krolaC, ekran)      #na odwrot krolaC i krolaB bo wykonano ruch i zamieniono kolejnosc
+                    else:
+                        podswietl_szacha(plansza.pozycja_krolaB, ekran)
+                    plansza.wyswietl_figury(ekran)
+                    p.display.flip()
+                    stop_event.set()
+                    time.sleep(0.51)
+                    koniec_gry_mat(root, kolor)
+            if plansza.pat:
+                    plansza.wyswietl_plansze(ekran, kolor_planszy)
+                    plansza.wyswietl_figury(ekran)
+                    p.display.flip()
+                    stop_event.set()
+                    time.sleep(0.51)
+                    koniec_gry_pat(root)
+
+            czy_wykonano_ruch = False
+
+
+        if not wyjscie:
+            plansza.wyswietl_figury(ekran)
+            zegar.tick(15)
+            p.display.flip()
+    client.close()
+
+def host_game_online(host, port, root):
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind((host, port))
+        server.listen(1)
+        client, addr = server.accept()
+        czy_host = True
+        threading.Thread(target=gra_online(root, client, czy_host), args=(root, client, czy_host,)).start()
+        server.close()
+
+def connect_to_game_online(host, port, root):
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client.connect((host, port))
+        czy_host = False
+        threading.Thread(target=gra_online(root, client, czy_host), args=(root, client, czy_host,)).start()
 
 
 def graj(root, backgroundimage):
