@@ -20,7 +20,7 @@ event_timer = threading.Event()
 
 port = 9999
 
-adres_ip = "localhost"
+adres_ip = socket.gethostbyname(socket.gethostname())
 def main(first_launch=True, root=tkinter.Tk()):
     global remaining_time_B, remaining_time_C, event_timer, stop_event, condition
     p.init()
