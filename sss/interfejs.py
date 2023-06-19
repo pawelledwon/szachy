@@ -18,9 +18,12 @@ condition = threading.Lock()
 stop_event = threading.Event()
 event_timer = threading.Event()
 
+port = 9999
 
+adres_ip = "192.168.0.21"
 def main(first_launch=True, root=tkinter.Tk()):
     global remaining_time_B, remaining_time_C, event_timer
+    p.init()
     remaining_time_B = 600
     remaining_time_C = 600
     stop_event.clear()
@@ -328,15 +331,17 @@ def propozycja_remisu(root, kolor, plansza, poprawne_ruchy):
     else:
         return "N"
 
-def propozycja_remisu_online(kolor, plansza, poprawne_ruchy):
+def propozycja_remisu_online(kolor, plansza, poprawne_ruchy, client):
     msg_box = messagebox.askquestion('Remis?', '%s kolor proponuje remis. \nPrzyjmujesz?' %(kolor))
     if msg_box == 'yes':
+        client.send("T".encode('utf-8'))
         messagebox.showinfo("Koniec gry!", "Remis przez obupólną zgodę \nNaciśnij OK aby wrocić do menu")
         stop_event.set()
         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
             plansza.wykonaj_ruch(poprawne_ruchy[0])
-            return True
+        return True
     else:
+        client.send("N".encode('utf-8'))
         return False
 def odliczaj_czas_B(ekran):
         global remaining_time_B, condition
@@ -560,10 +565,6 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                                    p.draw.rect(ekran, "lightblue", p.Rect(695, 15, 345, 90))
             poprawne_ruchy = plansza.aktualizuj_ruchy()
             wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
-            if event_timer.is_set():
-                event_timer.clear()
-            else:
-                event_timer.set()
 
             if not czy_odczytano:
                 timerB_aktywny = not timerB_aktywny
@@ -646,30 +647,50 @@ def gra_pojedynek(root):
 
     gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wykonano_ruch, czy_cofnieto, plansza, ekran, root, gra_treningowa)
 
-def odczytaj_pozycje(str):
-    str = str.split(",")
-    return int(str[0]), int(str[1])
-
-def zmien_w_stringa(tup):
-    return str(tup[0]) + "," + str(tup[1])
 
 def gra_online_wybor(root, backgroundimage):
+    global port, adres_ip
     for widget in root.winfo_children():
         widget.destroy()
     background_label = tkinter.Label(root, image=backgroundimage)
     background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-    b_host = tkinter.Button(root, text='HOSTUJ GRE',command =lambda:  host_game_online("192.168.0.21", 9999, root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
+    b_host = tkinter.Button(root, text='GRAJ JAKO HOST',command =lambda:  gra_online_host(root, backgroundimage),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
     b_host.place(x=30, y=180)
 
-    b_connect = tkinter.Button(root, text='DOLACZ DO GRY',command =lambda: connect_to_game_online("192.168.0.21", 9999, root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
+    b_connect = tkinter.Button(root, text='DOLACZ DO GRY',command =lambda: connect_to_game_online(adres_ip, port, root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
     b_connect.place(x=30, y=240)
 
     root.mainloop()
 
 
+def submit(ipv4):
+    global adres_ip
+    adres_ip = ipv4.get()
+
+
+def gra_online_host(root, backgroundimage):
+    global adres_ip
+    ipv4 = tkinter.StringVar()
+    wybor_opcji(root, backgroundimage)
+
+
+    text_label = ttk.Label(root, text="Podaj IPV4 komputera", font=("Arial", 12))
+    text_label.configure(foreground="white")
+    text_label.configure(background="chocolate2")
+    text_label.place(x=45, y=150)
+
+    ip_entry = tkinter.Entry(root, textvariable=ipv4, font=('Arial',12,'normal'))
+    ip_entry.place(x=45, y=120)
+
+    b_host = tkinter.Button(root, text='WYSLIJ',command=lambda: submit(ipv4) ,bg ='chocolate',font = 'arial',fg = 'white',width = 10 )
+    b_host.place(x=250, y=120)
+
+    b_host = tkinter.Button(root, text='ROZPOCZNIJ',command =lambda:  host_game_online(adres_ip, port, root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
+    b_host.place(x=300, y=400)
 
 def gra_online(root, client, czy_host):
+    global port, remaining_time_B, remaining_time_C, kolor_planszy
     root.withdraw()
     ekran = p.display.set_mode((1200,768))
     p.display.set_caption('Szachy')
@@ -683,8 +704,33 @@ def gra_online(root, client, czy_host):
     poprawne_ruchy = plansza.aktualizuj_ruchy()
     czy_wykonano_ruch = False
     wyjscie = False
-    poddanie = False
-    remis = False
+    counter = 0
+    if czy_host:
+        time.sleep(0.25)
+        while True:
+            client.send(str(remaining_time_B).encode('utf-8'))
+            break
+    else:
+        while True:
+            data = client.recv(2048)
+            if data:
+                czas = data.decode('utf-8')
+                remaining_time_B = int(czas)
+                remaining_time_C = int(czas)
+                break
+
+
+    t1 = threading.Thread(target=odliczaj_czas_B, args=(ekran,))
+    t2 = threading.Thread(target=odliczaj_czas_C, args=(ekran,))
+
+    wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
+
+    t1.start()
+    time.sleep(0.5)
+    t2.start()
+    draw_button_RP(ekran, p.Rect(870, 305, 150, 33), "Zaproponuj remis", plansza.ruch_bialych)
+    draw_button_RP(ekran, p.Rect(1035, 305, 150, 33), "Poddaj się", plansza.ruch_bialych)
+
 
     if czy_host:
         plansza.you = "B"
@@ -700,6 +746,7 @@ def gra_online(root, client, czy_host):
 
         draw_button_RP(ekran, p.Rect(870, 305, 150, 33), "Zaproponuj remis", plansza.ruch_bialych)
         draw_button_RP(ekran, p.Rect(1035, 305, 150, 33), "Poddaj się", plansza.ruch_bialych)
+        draw_button(ekran, p.Rect(1030, 675, 150, 53), 'aliceblue', "Wyjdź do menu", False)
 
         if plansza.ruch_bialych:
             kolor = 'Bialy'
@@ -725,14 +772,19 @@ def gra_online(root, client, czy_host):
         for event in p.event.get():
             if event.type == p.QUIT:
                 stop_event.set()
+                client.send("exit".encode('utf-8'))
+                client.close()
+                port -= 1
                 time.sleep(1)
                 running = False
                 p.quit()
                 root.destroy()
                 wyjscie = True
+
+
+
             elif event.type == p.MOUSEBUTTONDOWN:
                 pos = p.mouse.get_pos()
-                #print(pos)
                 if (plansza.you == "B" and plansza.ruch_bialych) or (plansza.you == "C" and not plansza.ruch_bialych):
                     if pos[0]<=670 and pos[0]>=30 and pos[1]<=700 and pos[1]>=60:
                         pole_x, pole_y = klikniecie(ekran, pos[0], pos[1])
@@ -782,15 +834,33 @@ def gra_online(root, client, czy_host):
                                                             klikniecia_gracza = []
                     if pos[0]<=1185 and pos[0]>=1035 and pos[1]<=455 and pos[1]>=305:
                         stop_event.set()
+                        if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+                            plansza.wykonaj_ruch(poprawne_ruchy[0])
                         time.sleep(0.51)
                         client.send("ff".encode('utf-8'))
+                        client.close()
+                        port -= 1
                         koniec_gry_poddanie(root, kolor)
 
                     if pos[0]<=1020 and pos[0]>=870 and pos[1]<=455 and pos[1]>=305:
                         client.send("remis".encode('utf-8'))
-                        #propozycja_remisu(root, kolor, plansza, poprawne_ruchy)
+                        plansza.ruch_bialych = not plansza.ruch_bialych
+
+                    if pos[0]<=1180 and pos[0]>=1030 and pos[1]<=723 and pos[1]>=670:
+                        if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+                            plansza.wykonaj_ruch(poprawne_ruchy[0])
+                        stop_event.set()
+                        ekran = p.display.set_mode((1200,768), flags=p.HIDDEN)
+                        time.sleep(1)
+                        wyjscie = True
+                        client.send("exit".encode('utf-8'))
+                        client.close()
+                        port -= 1
+                        wyjdz_do_menu(root)
+
         if czy_wykonano_ruch:
             plansza.ruch_bialych = not plansza.ruch_bialych
+
 
         if (plansza.you == "B" and plansza.ruch_bialych) or (plansza.you == "C" and not plansza.ruch_bialych):
             print("wysylam dane")
@@ -839,25 +909,62 @@ def gra_online(root, client, czy_host):
 
                 if ruch_str == "ff":
                     stop_event.set()
+                    if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+                        plansza.wykonaj_ruch(poprawne_ruchy[0])
                     time.sleep(0.51)
+                    client.close()
+                    port -= 1
                     koniec_gry_poddanie(root, kolor)
 
+
                 if ruch_str == "remis":
-                    decyzja = propozycja_remisu_online(kolor, plansza, poprawne_ruchy)
+                    decyzja = propozycja_remisu_online(kolor, plansza, poprawne_ruchy, client)
                     if decyzja:
-                        client.send("T".encode('utf-8'))
-                        messagebox.showinfo("Koniec gry!", "Zgoda na remis!!! \nNaciśnij OK aby wrocić do menu")
+                        client.close()
+                        stop_event.set()
+                        if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+                            plansza.wykonaj_ruch(poprawne_ruchy[0])
+                        time.sleep(0.51)
+                        p.quit()
+                        port -= 1
                         wyjdz_do_menu(root)
-                    else:
-                        client.send("N".encode('utf-8'))
+
+
 
                 if ruch_str == "T":
                     stop_event.set()
                     time.sleep(0.51)
+                    if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+                        plansza.wykonaj_ruch(poprawne_ruchy[0])
                     messagebox.showinfo("Koniec gry!", "Zgoda na remis!!! \nNaciśnij OK aby wrocić do menu")
+                    p.quit()
+                    client.close()
+                    port -= 1
+                    wyjdz_do_menu(root)
+
+
+                if ruch_str == "N":
+                    plansza.ruch_bialych = not plansza.ruch_bialych
+                    messagebox.showinfo("Remis?", "Przeciwnik odrzucił remis \nNaciśnij OK aby kontynuować")
+
+
+                if ruch_str == "exit":
+                    stop_event.set()
+                    time.sleep(0.5)
+                    messagebox.showinfo("Koniec gry!", "Przeciwnik opuścił rozgrywkę \nNaciśnij OK aby kontynuować")
+                    if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+                        plansza.wykonaj_ruch(poprawne_ruchy[0])
+                    time.sleep(0.5)
+                    p.quit()
+                    client.close()
+                    port -= 1
                     wyjdz_do_menu(root)
 
                 if ruch_str != notacja_ostatniego_ruchu:
+                    if event_timer.is_set():
+                        event_timer.clear()
+                    else:
+                        event_timer.set()
                     for ruch in poprawne_ruchy:
                          if ruch.notacja_uzytkownika == ruch_str:
                             plansza.wykonaj_ruch(ruch)
@@ -890,6 +997,10 @@ def gra_online(root, client, czy_host):
         if czy_wykonano_ruch:
             poprawne_ruchy = plansza.aktualizuj_ruchy()
             wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
+            if event_timer.is_set():
+                event_timer.clear()
+            else:
+                event_timer.set()
             if plansza.szachmat:
                     plansza.wyswietl_plansze(ekran, kolor_planszy)
                     if kolor == 'Bialy':
@@ -918,6 +1029,15 @@ def gra_online(root, client, czy_host):
             plansza.wyswietl_figury(ekran)
             zegar.tick(15)
             p.display.flip()
+
+        if remaining_time_B == -1:
+            stop_event.set()
+            time.sleep(0.51)
+            koniec_gry_czas(root, 'Czarny')
+        if remaining_time_C == -1:
+            stop_event.set()
+            time.sleep(0.51)
+            koniec_gry_czas(root, 'Bialy')
     client.close()
 
 def host_game_online(host, port, root):
