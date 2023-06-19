@@ -20,7 +20,7 @@ event_timer = threading.Event()
 
 port = 9999
 
-adres_ip = "localhost"
+adres_ip = socket.gethostbyname(socket.gethostname())
 def main(first_launch=True, root=tkinter.Tk()):
     global remaining_time_B, remaining_time_C, event_timer, stop_event, condition
     p.init()
@@ -894,14 +894,13 @@ def gra_online(root, client, czy_host):
         if czy_wykonano_ruch:
             plansza.ruch_bialych = not plansza.ruch_bialych
 
-
+        time.sleep(0.01)
         if (plansza.you == "B" and plansza.ruch_bialych) or (plansza.you == "C" and not plansza.ruch_bialych):
             print("wysylam dane")
-            if len(plansza.historia_ruchow) == 0:
-                client.send("-1".encode('utf-8'))
-            else:
-                print(plansza.historia_ruchow[-1].notacja_uzytkownika)
+            if czy_wykonano_ruch:
                 client.send(plansza.historia_ruchow[-1].notacja_uzytkownika.encode('utf-8'))
+            else:
+                client.send(" ".encode('utf-8'))
             if plansza.szachmat:
                     poprawne_ruchy = plansza.aktualizuj_ruchy()
                     wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
@@ -931,7 +930,7 @@ def gra_online(root, client, czy_host):
         else:
             notacja_ostatniego_ruchu = "-1"
             if len(plansza.historia_ruchow) > 0:
-                notacja_ostatniego_ruchu = plansza.historia_ruchow[-1].notacja_uzytkownika
+                notacja_ostatniego_ruchu = " "
             data = client.recv(2048)
             print("odbieram dane")
             if not data:
@@ -939,93 +938,93 @@ def gra_online(root, client, czy_host):
                 break
             else:
                 ruch_str = data.decode('utf-8')
-
-                if ruch_str == "ff":
-                    stop_event.set()
-                    if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
-                        plansza.wykonaj_ruch(poprawne_ruchy[0])
-                    time.sleep(0.51)
-                    client.close()
-                    port -= 1
-                    koniec_gry_poddanie(root, kolor)
-
-
-                if ruch_str == "remis":
-                    decyzja = propozycja_remisu_online(kolor, plansza, poprawne_ruchy, client)
-                    if decyzja:
-                        client.close()
+                if ruch_str != " ":
+                    if ruch_str == "ff":
                         stop_event.set()
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
                             plansza.wykonaj_ruch(poprawne_ruchy[0])
                         time.sleep(0.51)
+                        client.close()
+                        port -= 1
+                        koniec_gry_poddanie(root, kolor)
+
+
+                    if ruch_str == "remis":
+                        decyzja = propozycja_remisu_online(kolor, plansza, poprawne_ruchy, client)
+                        if decyzja:
+                            client.close()
+                            stop_event.set()
+                            if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+                                plansza.wykonaj_ruch(poprawne_ruchy[0])
+                            time.sleep(0.51)
+                            p.quit()
+                            port -= 1
+                            wyjdz_do_menu(root)
+
+
+
+                    if ruch_str == "T":
+                        stop_event.set()
+                        time.sleep(0.51)
+                        if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+                            plansza.wykonaj_ruch(poprawne_ruchy[0])
+                        messagebox.showinfo("Koniec gry!", "Zgoda na remis!!! \nNaciśnij OK aby wrocić do menu")
                         p.quit()
+                        client.close()
                         port -= 1
                         wyjdz_do_menu(root)
 
 
-
-                if ruch_str == "T":
-                    stop_event.set()
-                    time.sleep(0.51)
-                    if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
-                        plansza.wykonaj_ruch(poprawne_ruchy[0])
-                    messagebox.showinfo("Koniec gry!", "Zgoda na remis!!! \nNaciśnij OK aby wrocić do menu")
-                    p.quit()
-                    client.close()
-                    port -= 1
-                    wyjdz_do_menu(root)
+                    if ruch_str == "N":
+                        plansza.ruch_bialych = not plansza.ruch_bialych
+                        messagebox.showinfo("Remis?", "Przeciwnik odrzucił remis \nNaciśnij OK aby kontynuować")
 
 
-                if ruch_str == "N":
-                    plansza.ruch_bialych = not plansza.ruch_bialych
-                    messagebox.showinfo("Remis?", "Przeciwnik odrzucił remis \nNaciśnij OK aby kontynuować")
+                    if ruch_str == "exit":
+                        stop_event.set()
+                        time.sleep(0.5)
+                        messagebox.showinfo("Koniec gry!", "Przeciwnik opuścił rozgrywkę \nNaciśnij OK aby kontynuować")
+                        if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+                            plansza.wykonaj_ruch(poprawne_ruchy[0])
+                        time.sleep(0.5)
+                        p.quit()
+                        client.close()
+                        port -= 1
+                        wyjdz_do_menu(root)
 
-
-                if ruch_str == "exit":
-                    stop_event.set()
-                    time.sleep(0.5)
-                    messagebox.showinfo("Koniec gry!", "Przeciwnik opuścił rozgrywkę \nNaciśnij OK aby kontynuować")
-                    if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
-                        plansza.wykonaj_ruch(poprawne_ruchy[0])
-                    time.sleep(0.5)
-                    p.quit()
-                    client.close()
-                    port -= 1
-                    wyjdz_do_menu(root)
-
-                if ruch_str != notacja_ostatniego_ruchu:
-                    for ruch in poprawne_ruchy:
-                         if ruch.notacja_uzytkownika == ruch_str:
-                            if event_timer.is_set():
-                                event_timer.clear()
-                            else:
-                                event_timer.set()
-                            plansza.wykonaj_ruch(ruch)
-                            poprawne_ruchy = plansza.aktualizuj_ruchy()
-                            wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
-                         elif len(plansza.historia_ruchow) > 5:
-                                if ruch_str[-1] == 'H' or ruch_str[-1] == 'W' or ruch_str[-1] == 'S' or ruch_str[-1] == 'G':
-                                    if ruch_str.find(ruch.notacja_uzytkownika) != -1:
-                                        if event_timer.is_set():
-                                            event_timer.clear()
-                                        else:
-                                            event_timer.set()
-                                        pionek = ruch.przesuwana_figura
-                                        if plansza.ruch_bialych:
-                                            kolor = "Bialy"
-                                        else:
-                                            kolor = "Czarny"
-                                        plansza.wykonaj_ruch(ruch)
-                                        if ruch_str[-1] == 'H':
-                                            plansza.board[pionek.rzad][pionek.kolumna] = Hetman(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Hetman"])
-                                        elif ruch_str[-1] == 'W':
-                                            plansza.board[pionek.rzad][pionek.kolumna] = Wieza(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Wieza"])
-                                        elif ruch_str[-1] == 'G':
-                                            plansza.board[pionek.rzad][pionek.kolumna] = Goniec(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Goniec"])
-                                        elif ruch_str[-1] == 'W':
-                                            plansza.board[pionek.rzad][pionek.kolumna] = Skoczek(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Skoczek"])
-                                        poprawne_ruchy = plansza.aktualizuj_ruchy()
-                                        wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
+                    if ruch_str != notacja_ostatniego_ruchu:
+                        print(ruch_str)
+                        for ruch in poprawne_ruchy:
+                             if ruch.notacja_uzytkownika == ruch_str:
+                                if event_timer.is_set():
+                                    event_timer.clear()
+                                else:
+                                    event_timer.set()
+                                plansza.wykonaj_ruch(ruch)
+                                poprawne_ruchy = plansza.aktualizuj_ruchy()
+                                wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
+                             elif len(plansza.historia_ruchow) > 5 and ruch_str[-1] == 'H' or ruch_str[-1] == 'W' or ruch_str[-1] == 'S' or ruch_str[-1] == 'G':
+                                        if ruch_str.find(ruch.notacja_uzytkownika) != -1:
+                                            if event_timer.is_set():
+                                                event_timer.clear()
+                                            else:
+                                                event_timer.set()
+                                            pionek = ruch.przesuwana_figura
+                                            if plansza.ruch_bialych:
+                                                kolor = "Bialy"
+                                            else:
+                                                kolor = "Czarny"
+                                            plansza.wykonaj_ruch(ruch)
+                                            if ruch_str[-1] == 'H':
+                                                plansza.board[pionek.rzad][pionek.kolumna] = Hetman(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Hetman"])
+                                            elif ruch_str[-1] == 'W':
+                                                plansza.board[pionek.rzad][pionek.kolumna] = Wieza(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Wieza"])
+                                            elif ruch_str[-1] == 'G':
+                                                plansza.board[pionek.rzad][pionek.kolumna] = Goniec(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Goniec"])
+                                            elif ruch_str[-1] == 'W':
+                                                plansza.board[pionek.rzad][pionek.kolumna] = Skoczek(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Skoczek"])
+                                            poprawne_ruchy = plansza.aktualizuj_ruchy()
+                                            wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
 
 
         if czy_wykonano_ruch:
