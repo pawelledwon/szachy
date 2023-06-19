@@ -73,12 +73,16 @@ class Zapis_i_odczyt:
 
                         if podzielone_ruchy[0][-1] == 'H':
                             plansza.board[pionek.rzad][pionek.kolumna] = Hetman(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Hetman"])
+                            mozliwe_ruchy[j].notacja_uzytkownika += 'H'
                         elif podzielone_ruchy[0][-1] == 'W':
                             plansza.board[pionek.rzad][pionek.kolumna] = Wieza(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Wieza"])
+                            mozliwe_ruchy[j].notacja_uzytkownika += 'W'
                         elif podzielone_ruchy[0][-1] == 'G':
                             plansza.board[pionek.rzad][pionek.kolumna] = Goniec(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Goniec"])
-                        elif podzielone_ruchy[0][-1] == 'W':
+                            mozliwe_ruchy[j].notacja_uzytkownika += 'G'
+                        elif podzielone_ruchy[0][-1] == 'S':
                             plansza.board[pionek.rzad][pionek.kolumna] = Skoczek(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Skoczek"])
+                            mozliwe_ruchy[j].notacja_uzytkownika += 'S'
                         podzielone_ruchy.pop(0)
                         break
             mozliwe_ruchy = plansza.aktualizuj_ruchy()

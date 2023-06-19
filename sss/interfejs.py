@@ -20,14 +20,16 @@ event_timer = threading.Event()
 
 port = 9999
 
-adres_ip = "192.168.0.21"
+adres_ip = "localhost"
 def main(first_launch=True, root=tkinter.Tk()):
-    global remaining_time_B, remaining_time_C, event_timer
+    global remaining_time_B, remaining_time_C, event_timer, stop_event, condition
     p.init()
-    remaining_time_B = 600
-    remaining_time_C = 600
     stop_event.clear()
     event_timer.clear()
+    remaining_time_B = 600
+    remaining_time_C = 600
+    time.sleep(0.5)
+
     if first_launch:        #tworzy okienko
         p.init()
         root.geometry('480x480')  #ustawia rozmiar
@@ -529,7 +531,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                         plansza.wykonaj_ruch(poprawne_ruchy[0])
                     stop_event.set()
                     ekran = p.display.set_mode((1200,768), flags=p.HIDDEN)
-                    time.sleep(0.25)
+                    time.sleep(0.5)
                     wyjscie = True
                     wyjdz_do_menu(root)
 
@@ -570,6 +572,10 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                 timerB_aktywny = not timerB_aktywny
             czy_odczytano = False
 
+            if event_timer.is_set():
+                event_timer.clear()
+            else:
+                event_timer.set()
 
             if plansza.szachmat:
                     plansza.wyswietl_plansze(ekran, kolor_planszy)
@@ -658,10 +664,35 @@ def gra_online_wybor(root, backgroundimage):
     b_host = tkinter.Button(root, text='GRAJ JAKO HOST',command =lambda:  gra_online_host(root, backgroundimage),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
     b_host.place(x=30, y=180)
 
-    b_connect = tkinter.Button(root, text='DOLACZ DO GRY',command =lambda: connect_to_game_online(adres_ip, port, root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
+    b_connect = tkinter.Button(root, text='DOLACZ DO GRY',command =lambda: gra_online_dolacz(root, backgroundimage),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
     b_connect.place(x=30, y=240)
 
     root.mainloop()
+
+def gra_online_dolacz(root, backgroundimage):
+    global adres_ip
+    ipv4 = tkinter.StringVar()
+
+    default_ip = socket.gethostbyname(socket.gethostname())
+    for widget in root.winfo_children():
+        widget.destroy()
+    background_label = tkinter.Label(root, image=backgroundimage)
+    background_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+    text_label = ttk.Label(root, text="Podaj IPV4, w celu połączenia", font=("Arial", 12))
+    text_label.configure(foreground="white")
+    text_label.configure(background="chocolate2")
+    text_label.place(x=45, y=150)
+
+    ip_entry = tkinter.Entry(root, textvariable=ipv4, font=('Arial',12,'normal'))
+    ip_entry.insert(tkinter.END, default_ip)
+    ip_entry.place(x=45, y=120)
+
+    b_host = tkinter.Button(root, text='WYSLIJ',command=lambda: submit(ipv4) ,bg ='chocolate',font = 'arial',fg = 'white',width = 10 )
+    b_host.place(x=250, y=120)
+
+    b_host = tkinter.Button(root, text='DOŁĄCZ',command =lambda:  connect_to_game_online(adres_ip, port, root),bg ='chocolate',font = 'arial',fg = 'white',width = 15 )
+    b_host.place(x=300, y=400)
 
 
 def submit(ipv4):
@@ -674,6 +705,7 @@ def gra_online_host(root, backgroundimage):
     ipv4 = tkinter.StringVar()
     wybor_opcji(root, backgroundimage)
 
+    default_ip = socket.gethostbyname(socket.gethostname())
 
     text_label = ttk.Label(root, text="Podaj IPV4 komputera", font=("Arial", 12))
     text_label.configure(foreground="white")
@@ -681,12 +713,13 @@ def gra_online_host(root, backgroundimage):
     text_label.place(x=45, y=150)
 
     ip_entry = tkinter.Entry(root, textvariable=ipv4, font=('Arial',12,'normal'))
+    ip_entry.insert(tkinter.END, default_ip)
     ip_entry.place(x=45, y=120)
 
     b_host = tkinter.Button(root, text='WYSLIJ',command=lambda: submit(ipv4) ,bg ='chocolate',font = 'arial',fg = 'white',width = 10 )
     b_host.place(x=250, y=120)
 
-    b_host = tkinter.Button(root, text='ROZPOCZNIJ',command =lambda:  host_game_online(adres_ip, port, root),bg ='chocolate',font = 'arial',fg = 'white',width = 20 )
+    b_host = tkinter.Button(root, text='ROZPOCZNIJ',command =lambda:  host_game_online(adres_ip, port, root),bg ='chocolate',font = 'arial',fg = 'white',width = 15 )
     b_host.place(x=300, y=400)
 
 def gra_online(root, client, czy_host):
@@ -961,18 +994,22 @@ def gra_online(root, client, czy_host):
                     wyjdz_do_menu(root)
 
                 if ruch_str != notacja_ostatniego_ruchu:
-                    if event_timer.is_set():
-                        event_timer.clear()
-                    else:
-                        event_timer.set()
                     for ruch in poprawne_ruchy:
                          if ruch.notacja_uzytkownika == ruch_str:
+                            if event_timer.is_set():
+                                event_timer.clear()
+                            else:
+                                event_timer.set()
                             plansza.wykonaj_ruch(ruch)
                             poprawne_ruchy = plansza.aktualizuj_ruchy()
                             wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
                          elif len(plansza.historia_ruchow) > 5:
                                 if ruch_str[-1] == 'H' or ruch_str[-1] == 'W' or ruch_str[-1] == 'S' or ruch_str[-1] == 'G':
                                     if ruch_str.find(ruch.notacja_uzytkownika) != -1:
+                                        if event_timer.is_set():
+                                            event_timer.clear()
+                                        else:
+                                            event_timer.set()
                                         pionek = ruch.przesuwana_figura
                                         if plansza.ruch_bialych:
                                             kolor = "Bialy"
@@ -1041,19 +1078,44 @@ def gra_online(root, client, czy_host):
     client.close()
 
 def host_game_online(host, port, root):
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.bind((host, port))
-        server.listen(1)
-        client, addr = server.accept()
-        czy_host = True
-        threading.Thread(target=gra_online(root, client, czy_host), args=(root, client, czy_host,)).start()
-        server.close()
+        global adres_ip
+        match = re.match(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", adres_ip)
+        if match:
+            server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server.bind((host, port))
+            server.listen(1)
+            client, addr = server.accept()
+            czy_host = True
+            threading.Thread(target=gra_online(root, client, czy_host), args=(root, client, czy_host,)).start()
+            server.close()
+        else:
+            if adres_ip == "localhost":
+                server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                server.bind((host, port))
+                server.listen(1)
+                client, addr = server.accept()
+                czy_host = True
+                threading.Thread(target=gra_online(root, client, czy_host), args=(root, client, czy_host,)).start()
+                server.close()
+            else:
+                messagebox.showinfo("Błąd!", "Źle wprowadzono dane. \nNaciśnij OK aby spróbować ponownie")
 
 def connect_to_game_online(host, port, root):
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect((host, port))
-        czy_host = False
-        threading.Thread(target=gra_online(root, client, czy_host), args=(root, client, czy_host,)).start()
+        global adres_ip
+        match = re.match(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", adres_ip)
+        if match:
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client.connect((host, port))
+            czy_host = False
+            threading.Thread(target=gra_online(root, client, czy_host), args=(root, client, czy_host,)).start()
+        else:
+            if adres_ip == "localhost":
+                client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                client.connect((host, port))
+                czy_host = False
+                threading.Thread(target=gra_online(root, client, czy_host), args=(root, client, czy_host,)).start()
+            else:
+                messagebox.showinfo("Błąd!", "Źle wprowadzono dane. \nNaciśnij OK aby spróbować ponownie")
 
 
 def graj(root, backgroundimage):

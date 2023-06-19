@@ -38,8 +38,6 @@ class Ruch:
         if self.przechwytywana_figura is None:
             if self.przesuwana_figura.nazwa == 'Pionek':
                 self.notacja_uzytkownika = str(self.slownik[self.cel_y + 1]) + str(8 - self.cel_x)
-                if self.czy_promocja:
-                    self.notacja_uzytkownika = str(self.slownik[self.cel_y + 1]) + str(8 - self.cel_x)
             else:
                 self.notacja_uzytkownika = self.przesuwana_figura.nazwa[0] + str(self.slownik[self.cel_y + 1]) + str(8 - self.cel_x)
         else:
