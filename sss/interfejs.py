@@ -894,7 +894,7 @@ def gra_online(root, client, czy_host):
         if czy_wykonano_ruch:
             plansza.ruch_bialych = not plansza.ruch_bialych
 
-        time.sleep(0.01)
+
         if (plansza.you == "B" and plansza.ruch_bialych) or (plansza.you == "C" and not plansza.ruch_bialych):
             print("wysylam dane")
             if czy_wykonano_ruch:
