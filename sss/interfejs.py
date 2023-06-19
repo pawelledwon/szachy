@@ -939,7 +939,7 @@ def gra_online(root, client, czy_host):
             else:
                 ruch_str = data.decode('utf-8')
                 if ruch_str != " ":
-                    if ruch_str == "ff":
+                    if ruch_str.strip() == "ff":
                         stop_event.set()
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
                             plansza.wykonaj_ruch(poprawne_ruchy[0])
@@ -949,7 +949,7 @@ def gra_online(root, client, czy_host):
                         koniec_gry_poddanie(root, kolor)
 
 
-                    if ruch_str == "remis":
+                    if ruch_str.strip() == "remis":
                         decyzja = propozycja_remisu_online(kolor, plansza, poprawne_ruchy, client)
                         if decyzja:
                             client.close()
@@ -963,7 +963,7 @@ def gra_online(root, client, czy_host):
 
 
 
-                    if ruch_str == "T":
+                    if ruch_str.strip() == "T":
                         stop_event.set()
                         time.sleep(0.51)
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
@@ -975,12 +975,12 @@ def gra_online(root, client, czy_host):
                         wyjdz_do_menu(root)
 
 
-                    if ruch_str == "N":
+                    if ruch_str.strip() == "N":
                         plansza.ruch_bialych = not plansza.ruch_bialych
                         messagebox.showinfo("Remis?", "Przeciwnik odrzucił remis \nNaciśnij OK aby kontynuować")
 
 
-                    if ruch_str == "exit":
+                    if ruch_str.strip() == "exit":
                         stop_event.set()
                         time.sleep(0.5)
                         messagebox.showinfo("Koniec gry!", "Przeciwnik opuścił rozgrywkę \nNaciśnij OK aby kontynuować")
@@ -992,8 +992,8 @@ def gra_online(root, client, czy_host):
                         port -= 1
                         wyjdz_do_menu(root)
 
-                    if ruch_str != notacja_ostatniego_ruchu:
-                        print(ruch_str)
+                    if ruch_str.strip() != notacja_ostatniego_ruchu:
+                        print(ruch_str.strip())
                         for ruch in poprawne_ruchy:
                              if ruch.notacja_uzytkownika == ruch_str:
                                 if event_timer.is_set():
