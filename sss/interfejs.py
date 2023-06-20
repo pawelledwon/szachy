@@ -900,10 +900,12 @@ def gra_online(root, client, czy_host):
 
             if czy_wykonano_ruch:
                 print(plansza.historia_ruchow[-1].notacja_uzytkownika)
+                time.sleep(0.01)
                 client.send(plansza.historia_ruchow[-1].notacja_uzytkownika.encode('utf-8'))
             else:
-                print("x")
-                client.send("x".encode('utf-8'))
+                print(">")
+                time.sleep(0.01)
+                client.send(">".encode('utf-8'))
             if plansza.szachmat:
                     poprawne_ruchy = plansza.aktualizuj_ruchy()
                     wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
@@ -942,7 +944,7 @@ def gra_online(root, client, czy_host):
             else:
                 ruch_str = data.decode('utf-8')
                 print(ruch_str)
-                if ruch_str != "x":
+                if ruch_str != ">":
                     if ruch_str.strip() == "ff":
                         stop_event.set()
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
@@ -1030,6 +1032,15 @@ def gra_online(root, client, czy_host):
                                                 plansza.board[pionek.rzad][pionek.kolumna] = Skoczek(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Skoczek"])
                                             poprawne_ruchy = plansza.aktualizuj_ruchy()
                                             wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
+                             elif ruch_str.strip().find(ruch.notacja_uzytkownika) != -1:
+                                 if event_timer.is_set():
+                                    event_timer.clear()
+                                 else:
+                                     event_timer.set()
+                                 plansza.wykonaj_ruch(ruch)
+                                 poprawne_ruchy = plansza.aktualizuj_ruchy()
+                                 wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
+
 
 
 
