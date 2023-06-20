@@ -896,10 +896,13 @@ def gra_online(root, client, czy_host):
 
 
         if (plansza.you == "B" and plansza.ruch_bialych) or (plansza.you == "C" and not plansza.ruch_bialych):
-            print("wysylam dane")
+
+
             if czy_wykonano_ruch:
+                print(plansza.historia_ruchow[-1].notacja_uzytkownika)
                 client.send(plansza.historia_ruchow[-1].notacja_uzytkownika.encode('utf-8'))
             else:
+                print(" ")
                 client.send(" ".encode('utf-8'))
             if plansza.szachmat:
                     poprawne_ruchy = plansza.aktualizuj_ruchy()
@@ -932,12 +935,13 @@ def gra_online(root, client, czy_host):
             if len(plansza.historia_ruchow) > 0:
                 notacja_ostatniego_ruchu = " "
             data = client.recv(2048)
-            print("odbieram dane")
+
             if not data:
                 client.close()
                 break
             else:
                 ruch_str = data.decode('utf-8')
+                print(ruch_str)
                 if ruch_str != " ":
                     if ruch_str.strip() == "ff":
                         stop_event.set()
@@ -994,6 +998,7 @@ def gra_online(root, client, czy_host):
 
                     if ruch_str.strip() != notacja_ostatniego_ruchu:
                         print(ruch_str.strip())
+
                         for ruch in poprawne_ruchy:
                              if ruch.notacja_uzytkownika == ruch_str:
                                 if event_timer.is_set():
@@ -1025,6 +1030,9 @@ def gra_online(root, client, czy_host):
                                                 plansza.board[pionek.rzad][pionek.kolumna] = Skoczek(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Skoczek"])
                                             poprawne_ruchy = plansza.aktualizuj_ruchy()
                                             wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
+
+
+
 
 
         if czy_wykonano_ruch:
