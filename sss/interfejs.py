@@ -1010,6 +1010,7 @@ def gra_online(root, client, czy_host):
                                 plansza.wykonaj_ruch(ruch)
                                 poprawne_ruchy = plansza.aktualizuj_ruchy()
                                 wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
+                                break
                              elif len(plansza.historia_ruchow) > 5 and ruch_str[-1] == 'H' or ruch_str[-1] == 'W' or ruch_str[-1] == 'S' or ruch_str[-1] == 'G':
                                         if ruch_str.find(ruch.notacja_uzytkownika) != -1:
                                             if event_timer.is_set():
@@ -1032,22 +1033,22 @@ def gra_online(root, client, czy_host):
                                                 plansza.board[pionek.rzad][pionek.kolumna] = Skoczek(kolor, pionek.rzad, pionek.kolumna, plansza.zdjecia[kolor[0].lower() + "Skoczek"])
                                             poprawne_ruchy = plansza.aktualizuj_ruchy()
                                             wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
-                             elif ruch_str.strip().find(ruch.notacja_uzytkownika) != -1:
-                                 if event_timer.is_set():
-                                    event_timer.clear()
-                                 else:
-                                     event_timer.set()
-                                 plansza.wykonaj_ruch(ruch)
-                                 poprawne_ruchy = plansza.aktualizuj_ruchy()
-                                 wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
-
-
-
-
-
+                                            break
+                             elif ruch_str.strip().find(ruch.notacja_uzytkownika) != -1 and ruch_str.strip().find(">") != -1:
+                                 ruch_do_wykonania = ruch_str.strip().replace('>', '')
+                                 if ruch_do_wykonania == ruch.notacja_uzytkownika:
+                                     if event_timer.is_set():
+                                        event_timer.clear()
+                                     else:
+                                         event_timer.set()
+                                     plansza.wykonaj_ruch(ruch)
+                                     poprawne_ruchy = plansza.aktualizuj_ruchy()
+                                     wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
 
         if czy_wykonano_ruch:
             plansza.ruch_bialych = not plansza.ruch_bialych
+
+        time.sleep(0.001)
 
         if czy_wykonano_ruch:
             poprawne_ruchy = plansza.aktualizuj_ruchy()
