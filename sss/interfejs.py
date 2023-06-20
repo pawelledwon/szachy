@@ -902,8 +902,8 @@ def gra_online(root, client, czy_host):
                 print(plansza.historia_ruchow[-1].notacja_uzytkownika)
                 client.send(plansza.historia_ruchow[-1].notacja_uzytkownika.encode('utf-8'))
             else:
-                print(" ")
-                client.send(" ".encode('utf-8'))
+                print("x")
+                client.send("x".encode('utf-8'))
             if plansza.szachmat:
                     poprawne_ruchy = plansza.aktualizuj_ruchy()
                     wyswietl_historie_ruchow(ekran, plansza.historia_ruchow)
@@ -942,7 +942,7 @@ def gra_online(root, client, czy_host):
             else:
                 ruch_str = data.decode('utf-8')
                 print(ruch_str)
-                if ruch_str != " ":
+                if ruch_str != "x":
                     if ruch_str.strip() == "ff":
                         stop_event.set()
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
