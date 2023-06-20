@@ -819,9 +819,12 @@ def gra_online(root, client, czy_host):
             elif event.type == p.MOUSEBUTTONDOWN:
                 pos = p.mouse.get_pos()
                 if (plansza.you == "B" and plansza.ruch_bialych) or (plansza.you == "C" and not plansza.ruch_bialych):
+
                     if pos[0]<=670 and pos[0]>=30 and pos[1]<=700 and pos[1]>=60:
+                        print(pos)
                         pole_x, pole_y = klikniecie(ekran, pos[0], pos[1])
 
+                        print(pole_x, pole_y)
                         if wybrane_pole == (pole_x, pole_y):
                             wybrane_pole = ()
                             klikniecia_gracza = []
@@ -865,6 +868,8 @@ def gra_online(root, client, czy_host):
                                                                p.draw.rect(ekran, "lightblue", p.Rect(695, 15, 345, 90))
                                                             wybrane_pole = ()
                                                             klikniecia_gracza = []
+                                wybrane_pole = ()
+                                klikniecia_gracza = []
                     if pos[0]<=1185 and pos[0]>=1035 and pos[1]<=455 and pos[1]>=305:
                         stop_event.set()
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
@@ -903,7 +908,6 @@ def gra_online(root, client, czy_host):
                 time.sleep(0.01)
                 client.send(plansza.historia_ruchow[-1].notacja_uzytkownika.encode('utf-8'))
             else:
-                print(">")
                 time.sleep(0.01)
                 client.send(">".encode('utf-8'))
             if plansza.szachmat:
@@ -943,7 +947,6 @@ def gra_online(root, client, czy_host):
                 break
             else:
                 ruch_str = data.decode('utf-8')
-                print(ruch_str)
                 if ruch_str != ">":
                     if ruch_str.strip() == "ff":
                         stop_event.set()
