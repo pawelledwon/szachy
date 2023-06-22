@@ -502,6 +502,8 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                     if pos[0]<=1185 and pos[0]>=1035 and pos[1]<=455 and pos[1]>=305:
                         stop_event.set()
                         time.sleep(0.51)
+                        if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
+                            plansza.wykonaj_ruch(poprawne_ruchy[0])
                         koniec_gry_poddanie(root, kolor)
 
                     if pos[0]<=1020 and pos[0]>=870 and pos[1]<=455 and pos[1]>=305:
