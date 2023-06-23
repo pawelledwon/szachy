@@ -14,7 +14,7 @@ Zdjecia = {}
 remaining_time_B = 600
 remaining_time_C = 600
 
-condition = threading.Lock()
+condition = threading.Semaphore(1)
 stop_event = threading.Event()
 event_timer = threading.Event()
 
@@ -348,7 +348,7 @@ def propozycja_remisu_online(kolor, plansza, poprawne_ruchy, client):
 def odliczaj_czas_B(ekran):
         global remaining_time_B, condition
         condition.acquire()
-        start_time = time.localtime(time.time()).tm_sec/100
+        start_time = time.localtime(time.time()).tm_sec
         roznica = 0
         while remaining_time_B >= 0:
             if stop_event.is_set():
@@ -361,20 +361,23 @@ def odliczaj_czas_B(ekran):
                 condition.release()
                 time.sleep(0.25)
                 condition.acquire()
+                roznica = 0
+                start_time = time.localtime(time.time()).tm_sec
             timer_B_wyswietl(ekran, czas_pozostaly)
             while roznica < 1.0:
-                roznica += time.localtime(time.time()).tm_sec*0.01 - start_time
+                print(time.localtime(time.time()).tm_sec)
+                roznica += time.localtime(time.time()).tm_sec - start_time
                 time.sleep(0.001)
                 if roznica < 0:
-                    start_time = time.localtime(time.time()).tm_sec*0.01
+                    start_time = time.localtime(time.time()).tm_sec
                     roznica = 0
-            start_time = time.localtime(time.time()).tm_sec*0.01
+            start_time = time.localtime(time.time()).tm_sec
             roznica = 0
         condition.release()
 def odliczaj_czas_C(ekran):
         global remaining_time_C, condition
         condition.acquire()
-        start_time = time.localtime(time.time()).tm_sec*0.01
+        start_time = time.localtime(time.time()).tm_sec
         roznica = 0
         while remaining_time_C >= 0:
             if stop_event.is_set():
@@ -388,13 +391,15 @@ def odliczaj_czas_C(ekran):
                 condition.release()
                 time.sleep(0.25)
                 condition.acquire()
+                roznica = 0
+                start_time = time.localtime(time.time()).tm_sec
             while roznica < 1.0:
-                roznica += time.localtime(time.time()).tm_sec*0.01 - start_time
+                roznica += time.localtime(time.time()).tm_sec - start_time
                 time.sleep(0.001)
                 if roznica < 0:
-                    start_time = time.localtime(time.time()).tm_sec*0.01
+                    start_time = time.localtime(time.time()).tm_sec
                     roznica = 0
-            start_time = time.localtime(time.time()).tm_sec*0.01
+            start_time = time.localtime(time.time()).tm_sec
             roznica = 0
         condition.release()
 def wyjdz_do_menu(root):
