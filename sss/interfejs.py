@@ -296,7 +296,7 @@ def zle_wprowadzone_dane(root):
     root.deiconify()
     main(False, root)
 def koniec_gry_mat(root, kolor):
-    messagebox.showinfo("Koniec gry!", "MAT!!! %s kolor wygrywa!!! \nNaciśnij OK aby wrocić do menu" % (kolor))
+    messagebox.showinfo("Koniec gry!", "MAT!!! %s kolor przegrywa!!! \nNaciśnij OK aby wrocić do menu" % (kolor))
     p.quit()
     root.deiconify()
     main(False, root)
@@ -506,7 +506,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                 else:
                     if pos[0]<=1185 and pos[0]>=1035 and pos[1]<=455 and pos[1]>=305:
                         stop_event.set()
-                        time.sleep(0.51)
+                        time.sleep(1)
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
                             plansza.wykonaj_ruch(poprawne_ruchy[0])
                         koniec_gry_poddanie(root, kolor)
@@ -587,9 +587,9 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
             if plansza.szachmat:
                     plansza.wyswietl_plansze(ekran, kolor_planszy)
                     if kolor == 'Bialy':
-                        podswietl_szacha(plansza.pozycja_krolaC, ekran)      #na odwrot krolaC i krolaB bo wykonano ruch i zamieniono kolejnosc
-                    else:
                         podswietl_szacha(plansza.pozycja_krolaB, ekran)
+                    else:
+                        podswietl_szacha(plansza.pozycja_krolaC, ekran)
                     plansza.wyswietl_figury(ekran)
                     p.display.flip()
                     stop_event.set()
@@ -610,11 +610,11 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
             draw_button_RP(ekran, p.Rect(1035, 305, 150, 33), "Poddaj się", plansza.ruch_bialych)
             if remaining_time_B == -1:
                 stop_event.set()
-                time.sleep(0.51)
+                time.sleep(1)
                 koniec_gry_czas(root, 'Czarny')
             if remaining_time_C == -1:
                 stop_event.set()
-                time.sleep(0.51)
+                time.sleep(1)
                 koniec_gry_czas(root, 'Bialy')
 
         if not wyjscie:
@@ -1098,11 +1098,11 @@ def gra_online(root, client, czy_host):
 
         if remaining_time_B == -1:
             stop_event.set()
-            time.sleep(0.51)
+            time.sleep(1)
             koniec_gry_czas(root, 'Czarny')
         if remaining_time_C == -1:
             stop_event.set()
-            time.sleep(0.51)
+            time.sleep(1)
             koniec_gry_czas(root, 'Bialy')
     client.close()
 
