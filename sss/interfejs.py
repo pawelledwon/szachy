@@ -100,7 +100,6 @@ def wybierz_kolor_planszy(root, backgroundimage):
 def przyciskwyjscia():
     global stop_event
     stop_event.set()
-    time.sleep(0.5)
     exit()
 
 def wybranie_numeru_planszy(nr_planszy):
@@ -327,7 +326,6 @@ def propozycja_remisu(root, kolor, plansza, poprawne_ruchy):
         stop_event.set()
         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
             plansza.wykonaj_ruch(poprawne_ruchy[0])
-        time.sleep(1)
         p.quit()
         wyjdz_do_menu(root)
     else:
@@ -365,12 +363,13 @@ def odliczaj_czas_B(ekran):
                 start_time = time.localtime(time.time()).tm_sec
             timer_B_wyswietl(ekran, czas_pozostaly)
             while roznica < 1.0:
+                if stop_event.is_set():
+                    break
                 print(time.localtime(time.time()).tm_sec)
                 roznica += time.localtime(time.time()).tm_sec - start_time
                 time.sleep(0.001)
                 if roznica < 0:
-                    start_time = time.localtime(time.time()).tm_sec
-                    roznica = 0
+                    break
             start_time = time.localtime(time.time()).tm_sec
             roznica = 0
         condition.release()
@@ -394,11 +393,12 @@ def odliczaj_czas_C(ekran):
                 roznica = 0
                 start_time = time.localtime(time.time()).tm_sec
             while roznica < 1.0:
+                if stop_event.is_set():
+                    break
                 roznica += time.localtime(time.time()).tm_sec - start_time
                 time.sleep(0.001)
                 if roznica < 0:
-                    start_time = time.localtime(time.time()).tm_sec
-                    roznica = 0
+                    break
             start_time = time.localtime(time.time()).tm_sec
             roznica = 0
         condition.release()
@@ -463,7 +463,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
         for event in p.event.get():
             if event.type == p.QUIT:
                 stop_event.set()
-                time.sleep(1)
+
                 running = False
                 p.quit()
                 root.destroy()
@@ -506,7 +506,6 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                 else:
                     if pos[0]<=1185 and pos[0]>=1035 and pos[1]<=455 and pos[1]>=305:
                         stop_event.set()
-                        time.sleep(1)
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
                             plansza.wykonaj_ruch(poprawne_ruchy[0])
                         koniec_gry_poddanie(root, kolor)
@@ -538,7 +537,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                         plansza.wykonaj_ruch(poprawne_ruchy[0])
                     stop_event.set()
                     ekran = p.display.set_mode((1200,768), flags=p.HIDDEN)
-                    time.sleep(0.5)
+
                     wyjscie = True
                     wyjdz_do_menu(root)
 
@@ -593,14 +592,14 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
                     plansza.wyswietl_figury(ekran)
                     p.display.flip()
                     stop_event.set()
-                    time.sleep(0.51)
+
                     koniec_gry_mat(root, kolor)
             if plansza.pat:
                     plansza.wyswietl_plansze(ekran, kolor_planszy)
                     plansza.wyswietl_figury(ekran)
                     p.display.flip()
                     stop_event.set()
-                    time.sleep(0.51)
+
                     koniec_gry_pat(root)
 
             czy_wykonano_ruch = False
@@ -610,11 +609,11 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
             draw_button_RP(ekran, p.Rect(1035, 305, 150, 33), "Poddaj się", plansza.ruch_bialych)
             if remaining_time_B == -1:
                 stop_event.set()
-                time.sleep(1)
+
                 koniec_gry_czas(root, 'Czarny')
             if remaining_time_C == -1:
                 stop_event.set()
-                time.sleep(1)
+
                 koniec_gry_czas(root, 'Bialy')
 
         if not wyjscie:
@@ -815,7 +814,6 @@ def gra_online(root, client, czy_host):
                 client.send("exit".encode('utf-8'))
                 client.close()
                 port -= 1
-                time.sleep(1)
                 running = False
                 p.quit()
                 root.destroy()
@@ -881,7 +879,7 @@ def gra_online(root, client, czy_host):
                         stop_event.set()
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
                             plansza.wykonaj_ruch(poprawne_ruchy[0])
-                        time.sleep(0.51)
+
                         client.send("ff".encode('utf-8'))
                         client.close()
                         port -= 1
@@ -896,7 +894,6 @@ def gra_online(root, client, czy_host):
                             plansza.wykonaj_ruch(poprawne_ruchy[0])
                         stop_event.set()
                         ekran = p.display.set_mode((1200,768), flags=p.HIDDEN)
-                        time.sleep(1)
                         wyjscie = True
                         client.send("exit".encode('utf-8'))
                         client.close()
@@ -930,7 +927,7 @@ def gra_online(root, client, czy_host):
                     plansza.wyswietl_figury(ekran)
                     p.display.flip()
                     stop_event.set()
-                    time.sleep(0.51)
+
                     koniec_gry_mat(root, kolor)
             if plansza.pat:
                     poprawne_ruchy = plansza.aktualizuj_ruchy()
@@ -939,7 +936,7 @@ def gra_online(root, client, czy_host):
                     plansza.wyswietl_figury(ekran)
                     p.display.flip()
                     stop_event.set()
-                    time.sleep(0.51)
+
                     koniec_gry_pat(root)
 
 
@@ -959,7 +956,7 @@ def gra_online(root, client, czy_host):
                         stop_event.set()
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
                             plansza.wykonaj_ruch(poprawne_ruchy[0])
-                        time.sleep(0.51)
+
                         client.close()
                         port -= 1
                         koniec_gry_poddanie(root, kolor)
@@ -972,7 +969,7 @@ def gra_online(root, client, czy_host):
                             stop_event.set()
                             if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
                                 plansza.wykonaj_ruch(poprawne_ruchy[0])
-                            time.sleep(0.51)
+
                             p.quit()
                             port -= 1
                             wyjdz_do_menu(root)
@@ -981,7 +978,7 @@ def gra_online(root, client, czy_host):
 
                     if ruch_str.strip() == "T":
                         stop_event.set()
-                        time.sleep(0.51)
+
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
                             plansza.wykonaj_ruch(poprawne_ruchy[0])
                         messagebox.showinfo("Koniec gry!", "Zgoda na remis!!! \nNaciśnij OK aby wrocić do menu")
@@ -998,11 +995,9 @@ def gra_online(root, client, czy_host):
 
                     if ruch_str.strip() == "exit":
                         stop_event.set()
-                        time.sleep(0.5)
                         messagebox.showinfo("Koniec gry!", "Przeciwnik opuścił rozgrywkę \nNaciśnij OK aby kontynuować")
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
                             plansza.wykonaj_ruch(poprawne_ruchy[0])
-                        time.sleep(0.5)
                         p.quit()
                         client.close()
                         port -= 1
@@ -1078,14 +1073,12 @@ def gra_online(root, client, czy_host):
                     plansza.wyswietl_figury(ekran)
                     p.display.flip()
                     stop_event.set()
-                    time.sleep(0.51)
                     koniec_gry_mat(root, kolor)
             if plansza.pat:
                     plansza.wyswietl_plansze(ekran, kolor_planszy)
                     plansza.wyswietl_figury(ekran)
                     p.display.flip()
                     stop_event.set()
-                    time.sleep(0.51)
                     koniec_gry_pat(root)
 
             czy_wykonano_ruch = False
@@ -1098,11 +1091,9 @@ def gra_online(root, client, czy_host):
 
         if remaining_time_B == -1:
             stop_event.set()
-            time.sleep(1)
             koniec_gry_czas(root, 'Czarny')
         if remaining_time_C == -1:
             stop_event.set()
-            time.sleep(1)
             koniec_gry_czas(root, 'Bialy')
     client.close()
 
