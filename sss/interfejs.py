@@ -365,7 +365,6 @@ def odliczaj_czas_B(ekran):
             while roznica < 1.0:
                 if stop_event.is_set():
                     break
-                print(time.localtime(time.time()).tm_sec)
                 roznica += time.localtime(time.time()).tm_sec - start_time
                 time.sleep(0.001)
                 if roznica < 0:
@@ -422,7 +421,7 @@ def gra(zegar, running, wybrane_pole, klikniecia_gracza, poprawne_ruchy, czy_wyk
     zapis_odczyt = Zapis_i_odczyt(plansza.historia_ruchow)
     if not gra_treningowa:
         t1.start()
-        time.sleep(0.5)
+        time.sleep(0.05)
         t2.start()
         draw_button_RP(ekran, p.Rect(870, 305, 150, 33), "Zaproponuj remis", plansza.ruch_bialych)
         draw_button_RP(ekran, p.Rect(1035, 305, 150, 33), "Poddaj się", plansza.ruch_bialych)
