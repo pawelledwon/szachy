@@ -952,7 +952,7 @@ def gra_online(root, client, czy_host):
             else:
                 ruch_str = data.decode('utf-8')
                 if ruch_str != ">":
-                    if ruch_str.strip() == "ff":
+                    if "ff" in ruch_str.strip():
                         stop_event.set()
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
                             plansza.wykonaj_ruch(poprawne_ruchy[0])
@@ -962,7 +962,7 @@ def gra_online(root, client, czy_host):
                         koniec_gry_poddanie(root, kolor)
 
 
-                    if ruch_str.strip() == "remis":
+                    if "remis" in ruch_str.strip():
                         decyzja = propozycja_remisu_online(kolor, plansza, poprawne_ruchy, client)
                         if decyzja:
                             client.close()
@@ -976,7 +976,7 @@ def gra_online(root, client, czy_host):
 
 
 
-                    if ruch_str.strip() == "T":
+                    if "T" in ruch_str.strip():
                         stop_event.set()
 
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
@@ -988,12 +988,12 @@ def gra_online(root, client, czy_host):
                         wyjdz_do_menu(root)
 
 
-                    if ruch_str.strip() == "N":
+                    if "N" in ruch_str.strip():
                         plansza.ruch_bialych = not plansza.ruch_bialych
                         messagebox.showinfo("Remis?", "Przeciwnik odrzucił remis \nNaciśnij OK aby kontynuować")
 
 
-                    if ruch_str.strip() == "exit":
+                    if "exit" in ruch_str.strip():
                         stop_event.set()
                         messagebox.showinfo("Koniec gry!", "Przeciwnik opuścił rozgrywkę \nNaciśnij OK aby kontynuować")
                         if len(plansza.historia_ruchow) == 1 or len(plansza.historia_ruchow) == 3:
